@@ -229,6 +229,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .inst-label{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;margin-right:6px}
 .inst-a{background:rgba(56,189,248,0.15);color:var(--teal)}
 .inst-b{background:rgba(167,139,250,0.15);color:var(--purple)}
+.inst-c{background:rgba(61,214,140,0.15);color:var(--green)}
+.inst-d{background:rgba(245,166,35,0.15);color:var(--amber)}
 .trend-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700}
 .trend-up{background:rgba(61,214,140,0.15);color:var(--green)}
 .trend-down{background:rgba(244,110,110,0.15);color:var(--red)}
@@ -369,8 +371,14 @@ tr:hover td{background:rgba(255,255,255,0.02)}
             <select id="histPrimary" onchange="onHistorySelectionChange()"></select>
           </div>
           <div class="hctrl">
-            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="compareEnabled" onchange="toggleCompare()"> COMPARE WITH</label>
-            <select id="histSecondary" onchange="onHistorySelectionChange()" disabled style="opacity:0.4"></select>
+            <label style="display:flex;align-items:center;gap:8px">
+              <input type="checkbox" id="compareEnabled" onchange="toggleCompare()"> COMPARE WITH (up to 3)
+            </label>
+            <div style="display:flex;flex-direction:column;gap:4px" id="compareSelects">
+              <select id="histSecondary" onchange="onHistorySelectionChange()" disabled style="opacity:0.4;min-width:200px"></select>
+              <select id="histTertiary" onchange="onHistorySelectionChange()" disabled style="opacity:0.4;min-width:200px"></select>
+              <select id="histQuaternary" onchange="onHistorySelectionChange()" disabled style="opacity:0.4;min-width:200px"></select>
+            </div>
           </div>
           <div class="hctrl">
             <label>TIME RANGE</label>
@@ -598,6 +606,7 @@ function loadFromStorage(){
     // Ensure all items have new fields added in later versions
     portfolioData=portfolioData.map(i=>({
       manualRating:0,manualNotes:'',indexSuitable:'',buyDate:'',notes:'',
+      alertAbove:null,alertBelow:null,_firedAbove:false,_firedBelow:false,
       ...i
     }));
     livePrices=d.livePrices||{};priceChange=d.priceChange||{};
@@ -1015,27 +1024,40 @@ function closeFundDetails(){
 // ═══════════════════════════════════════
 //  HISTORY TAB
 // ═══════════════════════════════════════
+const COMPARE_COLORS=['#a78bfa','#3dd68c','#f5a623']; // colors for 2nd, 3rd, 4th instruments
+
 function initHistoryTab(){
   const opts=portfolioData.map(i=>`<option value="${i.ticker}">${i.ticker} — ${i.name.substring(0,28)}</option>`).join('');
+  const noneOpt=`<option value="">— none —</option>`;
   document.getElementById('histPrimary').innerHTML=opts;
-  document.getElementById('histSecondary').innerHTML=`<option value="">— none —</option>`+opts;
+  ['histSecondary','histTertiary','histQuaternary'].forEach(id=>{
+    document.getElementById(id).innerHTML=noneOpt+opts;
+  });
   loadHistoryChart();
 }
+
 function openHistoryForTicker(ticker){
   switchNav('history');
   setTimeout(()=>{document.getElementById('histPrimary').value=ticker;loadHistoryChart();},50);
 }
+
 function toggleCompare(){
   const en=document.getElementById('compareEnabled').checked;
-  const s=document.getElementById('histSecondary');
-  s.disabled=!en;s.style.opacity=en?'1':'0.4';loadHistoryChart();
+  ['histSecondary','histTertiary','histQuaternary'].forEach(id=>{
+    const s=document.getElementById(id);
+    s.disabled=!en;s.style.opacity=en?'1':'0.4';
+  });
+  loadHistoryChart();
 }
+
 function onHistorySelectionChange(){loadHistoryChart();}
+
 function setRange(r){
   histRange=r;
   document.querySelectorAll('.rbtn').forEach(b=>b.classList.toggle('active',b.textContent===r));
   loadHistoryChart();
 }
+
 async function fetchHistorical(ticker,rangeDays){
   const cacheKey=ticker+'_'+rangeDays;
   if(histCache[cacheKey])return histCache[cacheKey];
@@ -1051,55 +1073,185 @@ async function fetchHistorical(ticker,rangeDays){
     const closes=result.indicators.quote[0].close||[];
     const data=timestamps.map((t,i)=>({t,c:closes[i]})).filter(p=>p.c!=null);
     histCache[cacheKey]=data;return data;
-  }catch(e){console.warn('History fetch failed:',ticker,e.message);return[];}
+  }catch(e){return[];}
 }
+
 async function loadHistoryChart(){
   const ticker1=document.getElementById('histPrimary').value;
   if(!ticker1)return;
   const compareEnabled=document.getElementById('compareEnabled').checked;
-  const ticker2=compareEnabled?document.getElementById('histSecondary').value:'';
+  const extraTickers=compareEnabled
+    ?['histSecondary','histTertiary','histQuaternary']
+      .map(id=>document.getElementById(id).value)
+      .filter(t=>t&&t!==ticker1)
+    :[];
+  // deduplicate
+  const compareTickers=[...new Set(extraTickers)];
+  const isCompare=compareTickers.length>0;
   const rangeDays=RANGE_DAYS[histRange]||365;
-  const isCompare=compareEnabled&&ticker2&&ticker2!==ticker1;
+
   document.getElementById('histLoading').style.display='flex';
+
   const item1=portfolioData.find(i=>i.ticker===ticker1);
-  const item2=ticker2?portfolioData.find(i=>i.ticker===ticker2):null;
-  const [data1,data2]=await Promise.all([
+  const compareItems=compareTickers.map(t=>portfolioData.find(i=>i.ticker===t)||{ticker:t});
+
+  const allData=await Promise.all([
     fetchHistorical(ticker1,rangeDays),
-    isCompare?fetchHistorical(ticker2,rangeDays):Promise.resolve([])
+    ...compareTickers.map(t=>fetchHistorical(t,rangeDays))
   ]);
+  const [data1,...dataN]=allData;
+
   document.getElementById('histLoading').style.display='none';
-  if(!data1.length){renderHistStats([],[],item1,item2,isCompare);return;}
-  const ex1=item1?getEx(item1.exchange):EXCHANGES[0],sym1=ex1.symbol;
-  let chartData1,chartData2=[];
-  if(isCompare&&data2.length){
-    const base1=data1[0].c,base2=data2[0].c;
+  if(!data1.length){renderHistStats([],[],item1,[],isCompare);return;}
+
+  const ex1=item1?getEx(item1.exchange):EXCHANGES[0];
+  const sym1=ex1.symbol;
+
+  // Build chart datasets
+  let chartData1;
+  const chartDataN=[];
+
+  if(isCompare){
+    // Normalize all to 100 at range start
+    const base1=data1[0].c;
     chartData1=data1.map(p=>({x:fmtDate(p.t),y:parseFloat(((p.c/base1)*100).toFixed(2))}));
-    chartData2=data2.map(p=>({x:fmtDate(p.t),y:parseFloat(((p.c/base2)*100).toFixed(2))}));
+    dataN.forEach(dN=>{
+      if(dN.length){
+        const baseN=dN[0].c;
+        chartDataN.push(dN.map(p=>({x:fmtDate(p.t),y:parseFloat(((p.c/baseN)*100).toFixed(2))})));
+      } else {
+        chartDataN.push([]);
+      }
+    });
     document.getElementById('normalizeNote').style.display='inline';
-  }else{
+  } else {
     chartData1=data1.map(p=>({x:fmtDate(p.t),y:parseFloat(p.c.toFixed(2))}));
     document.getElementById('normalizeNote').style.display='none';
   }
-  const datasets=[{label:ticker1,data:chartData1,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,0.06)',borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:0.3,fill:!isCompare}];
-  if(isCompare&&chartData2.length)datasets.push({label:ticker2,data:chartData2,borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,0.06)',borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:0.3,fill:false});
-  if(item1?.buyPrice&&!isCompare&&chartData1.length)datasets.push({label:'Buy price',data:chartData1.map(p=>({x:p.x,y:parseFloat(item1.buyPrice.toFixed(2))})),borderColor:'rgba(245,166,35,0.7)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,fill:false});
-  if(histChart){histChart.destroy();histChart=null;}
-  Chart.defaults.color='#556080';Chart.defaults.font.family="'JetBrains Mono',monospace";Chart.defaults.font.size=11;
-  histChart=new Chart(document.getElementById('histChart'),{
-    type:'line',data:{datasets},
-    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{display:true,labels:{color:'#8b9bbf',boxWidth:12,boxHeight:12,padding:16}},
-        tooltip:{backgroundColor:'rgba(22,27,38,0.95)',borderColor:'#3a4560',borderWidth:1,titleColor:'#8b9bbf',bodyColor:'#e2e8f4',
-          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${isCompare?ctx.parsed.y.toFixed(2):sym1+fmt(ctx.parsed.y)}${isCompare?' (indexed)':''}`}}},
-      scales:{x:{grid:{color:'rgba(42,51,71,0.5)'},ticks:{color:'#556080',maxTicksLimit:12,maxRotation:0}},
-        y:{grid:{color:'rgba(42,51,71,0.5)'},ticks:{color:'#556080',callback:v=>isCompare?v.toFixed(0):sym1+fmt(v)}}}}
+
+  const datasets=[{
+    label:ticker1,
+    data:chartData1,
+    borderColor:'#38bdf8',
+    backgroundColor:'rgba(56,189,248,0.06)',
+    borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:0.3,
+    fill:!isCompare
+  }];
+
+  // Add compare instrument datasets
+  compareTickers.forEach((t,i)=>{
+    if(chartDataN[i]&&chartDataN[i].length){
+      datasets.push({
+        label:t,
+        data:chartDataN[i],
+        borderColor:COMPARE_COLORS[i%COMPARE_COLORS.length],
+        backgroundColor:'rgba(0,0,0,0)',
+        borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:0.3,fill:false
+      });
+    }
   });
-  document.getElementById('histChartTitle').textContent=isCompare?`${ticker1} vs ${ticker2}`:`${ticker1} — ${item1?.name||''}`;
-  renderHistStats(data1,data2,item1,item2,isCompare);
+
+  // ── Reference lines (only in single instrument mode) ──
+  if(!isCompare&&chartData1.length){
+    const alerts=getAlert(ticker1);
+
+    // Buy price line (amber dashed)
+    if(item1?.buyPrice){
+      datasets.push({
+        label:`Buy ₹${fmtP(item1.buyPrice)}`,
+        data:chartData1.map(p=>({x:p.x,y:parseFloat(item1.buyPrice.toFixed(2))})),
+        borderColor:'rgba(245,166,35,0.85)',
+        borderWidth:1.5,
+        borderDash:[6,4],
+        pointRadius:0,pointHoverRadius:0,tension:0,fill:false
+      });
+    }
+
+    // Alert upper limit (green dashed)
+    if(alerts.above){
+      datasets.push({
+        label:`Alert ▲ ${sym1}${fmtP(alerts.above)}`,
+        data:chartData1.map(p=>({x:p.x,y:parseFloat(parseFloat(alerts.above).toFixed(2))})),
+        borderColor:'rgba(61,214,140,0.85)',
+        borderWidth:1.5,
+        borderDash:[4,4],
+        pointRadius:0,pointHoverRadius:0,tension:0,fill:false
+      });
+    }
+
+    // Alert lower limit (red dashed)
+    if(alerts.below){
+      datasets.push({
+        label:`Alert ▼ ${sym1}${fmtP(alerts.below)}`,
+        data:chartData1.map(p=>({x:p.x,y:parseFloat(parseFloat(alerts.below).toFixed(2))})),
+        borderColor:'rgba(244,110,110,0.85)',
+        borderWidth:1.5,
+        borderDash:[4,4],
+        pointRadius:0,pointHoverRadius:0,tension:0,fill:false
+      });
+    }
+  }
+
+  if(histChart){histChart.destroy();histChart=null;}
+  Chart.defaults.color='#556080';
+  Chart.defaults.font.family="'JetBrains Mono',monospace";
+  Chart.defaults.font.size=11;
+
+  histChart=new Chart(document.getElementById('histChart'),{
+    type:'line',
+    data:{datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{
+          display:true,
+          labels:{
+            color:'#8b9bbf',boxWidth:12,boxHeight:2,padding:16,
+            // Show dashes for reference lines in legend
+            generateLabels:chart=>chart.data.datasets.map((ds,i)=>({
+              text:ds.label,
+              fillStyle:'transparent',
+              strokeStyle:ds.borderColor,
+              lineWidth:ds.borderWidth,
+              lineDash:ds.borderDash||[],
+              hidden:false,
+              datasetIndex:i
+            }))
+          }
+        },
+        tooltip:{
+          backgroundColor:'rgba(22,27,38,0.95)',
+          borderColor:'#3a4560',borderWidth:1,
+          titleColor:'#8b9bbf',bodyColor:'#e2e8f4',
+          filter:item=>item.dataset.pointRadius!==0||item.datasetIndex===0,
+          callbacks:{
+            label:ctx=>{
+              // Skip reference lines in tooltip
+              if(ctx.dataset.borderDash)return null;
+              return ` ${ctx.dataset.label}: ${isCompare?ctx.parsed.y.toFixed(2):sym1+fmt(ctx.parsed.y)}${isCompare?' (indexed)':''}`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(42,51,71,0.5)'},ticks:{color:'#556080',maxTicksLimit:12,maxRotation:0}},
+        y:{grid:{color:'rgba(42,51,71,0.5)'},ticks:{color:'#556080',callback:v=>isCompare?v.toFixed(0):sym1+fmt(v)}}
+      }
+    }
+  });
+
+  // Chart title
+  const allTickers=[ticker1,...compareTickers.filter((_,i)=>chartDataN[i]?.length)];
+  document.getElementById('histChartTitle').textContent=
+    isCompare?allTickers.join(' vs '):`${ticker1} — ${item1?.name||''}`;
+
+  renderHistStats(data1,dataN,item1,compareItems,isCompare,compareTickers);
 }
-function renderHistStats(data1,data2,item1,item2,isCompare){
+function renderHistStats(data1,dataN,item1,compareItems,isCompare,compareTickers){
   const el=document.getElementById('histStats');
   if(!data1.length){el.innerHTML='<div style="text-align:center;color:var(--text3);padding:2rem;font-size:12px">No data available.</div>';return;}
+  const clsArr=['inst-a','inst-b','inst-c','inst-d'];
   function statsFor(data,item,label,cls){
     if(!data||!data.length)return'';
     const closes=data.map(p=>p.c),first=closes[0],last=closes[closes.length-1];
@@ -1116,29 +1268,19 @@ function renderHistStats(data1,data2,item1,item2,isCompare){
     let buyInfo='';
     if(item?.buyPrice&&!isCompare){
       const ga=last-item.buyPrice,gp=item.buyPrice>0?ga/item.buyPrice*100:0;
-      buyInfo=`<div class="stat-cell"><div class="stl">YOUR BUY PRICE</div><div class="stv neu">${sym}${fmtP(item.buyPrice)}</div></div>
-        <div class="stat-cell"><div class="stl">GAIN FROM BUY</div><div class="stv ${ga>=0?'pos':'neg'}">${ga>=0?'+':''}${sym}${fmtP(Math.abs(ga))}</div><div class="sts ${ga>=0?'pos':'neg'}">${pct(gp)}</div></div>`;
+      buyInfo=`<div class="stat-cell"><div class="stl">YOUR BUY PRICE</div><div class="stv neu">${sym}${fmtP(item.buyPrice)}</div></div><div class="stat-cell"><div class="stl">GAIN FROM BUY</div><div class="stv ${ga>=0?'pos':'neg'}">${ga>=0?'+':''}${sym}${fmtP(Math.abs(ga))}</div><div class="sts ${ga>=0?'pos':'neg'}">${pct(gp)}</div></div>`;
     }
-    return`<div style="margin-bottom:1.25rem">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem">
-        <span class="inst-label ${cls}">${label}</span>
-        <span style="font-size:12px;color:var(--text2)">${item?item.name:label}</span>
-        ${tBadge}
-      </div>
-      <div class="stats-grid">
-        <div class="stat-cell"><div class="stl">CURRENT</div><div class="stv neu">${isCompare?last.toFixed(2):sym+fmtP(last)}</div></div>
-        <div class="stat-cell"><div class="stl">RANGE CHANGE</div><div class="stv ${chgAbs>=0?'pos':'neg'}">${chgAbs>=0?'+':''}${isCompare?chgAbs.toFixed(2):sym+fmtP(Math.abs(chgAbs))}</div><div class="sts ${chgAbs>=0?'pos':'neg'}">${pct(chgPct)}</div></div>
-        <div class="stat-cell"><div class="stl">RANGE HIGH</div><div class="stv pos">${isCompare?high.toFixed(2):sym+fmtP(high)}</div></div>
-        <div class="stat-cell"><div class="stl">RANGE LOW</div><div class="stv neg">${isCompare?low.toFixed(2):sym+fmtP(low)}</div></div>
-        <div class="stat-cell"><div class="stl">DATA POINTS</div><div class="stv neu">${data.length}</div><div class="sts">${fmtDate(data[0].t)} → ${fmtDate(data[data.length-1].t)}</div></div>
-        ${buyInfo}
-      </div></div>`;
+    let alertInfo='';
+    if(!isCompare&&item){
+      const a=getAlert(item.ticker);
+      if(a.above)alertInfo+=`<div class="stat-cell"><div class="stl">ALERT UPPER</div><div class="stv pos">${sym}${fmtP(a.above)}</div><div class="sts">${last>=a.above?'▲ TRIGGERED':'below target'}</div></div>`;
+      if(a.below)alertInfo+=`<div class="stat-cell"><div class="stl">ALERT LOWER</div><div class="stv neg">${sym}${fmtP(a.below)}</div><div class="sts">${last<=a.below?'▼ TRIGGERED':'above target'}</div></div>`;
+    }
+    return`<div style="margin-bottom:1.25rem"><div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem"><span class="inst-label ${cls}">${label}</span><span style="font-size:12px;color:var(--text2)">${item?item.name:label}</span>${tBadge}</div><div class="stats-grid"><div class="stat-cell"><div class="stl">CURRENT</div><div class="stv neu">${isCompare?last.toFixed(2):sym+fmtP(last)}</div></div><div class="stat-cell"><div class="stl">RANGE CHANGE</div><div class="stv ${chgAbs>=0?'pos':'neg'}">${chgAbs>=0?'+':''}${isCompare?chgAbs.toFixed(2):sym+fmtP(Math.abs(chgAbs))}</div><div class="sts ${chgAbs>=0?'pos':'neg'}">${pct(chgPct)}</div></div><div class="stat-cell"><div class="stl">RANGE HIGH</div><div class="stv pos">${isCompare?high.toFixed(2):sym+fmtP(high)}</div></div><div class="stat-cell"><div class="stl">RANGE LOW</div><div class="stv neg">${isCompare?low.toFixed(2):sym+fmtP(low)}</div></div><div class="stat-cell"><div class="stl">DATA POINTS</div><div class="stv neu">${data.length}</div><div class="sts">${fmtDate(data[0].t)} → ${fmtDate(data[data.length-1].t)}</div></div>${buyInfo}${alertInfo}</div></div>`;
   }
-  el.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.25rem">
-    <div style="font-size:10px;letter-spacing:0.08em;color:var(--text3);margin-bottom:1rem">STATISTICS — ${histRange} RANGE</div>
-    ${statsFor(data1,item1,document.getElementById('histPrimary').value,'inst-a')}
-    ${isCompare&&data2.length?statsFor(data2,item2,document.getElementById('histSecondary').value,'inst-b'):''}
-  </div>`;
+  const ticker1=document.getElementById('histPrimary').value;
+  let html=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.25rem"><div style="font-size:10px;letter-spacing:0.08em;color:var(--text3);margin-bottom:1rem">STATISTICS — ${histRange} RANGE</div>${statsFor(data1,item1,ticker1,clsArr[0])}${(dataN||[]).map((dN,i)=>dN&&dN.length?statsFor(dN,compareItems&&compareItems[i],compareTickers&&compareTickers[i]||'',clsArr[i+1]):'').join('')}</div>`;
+  el.innerHTML=html;
 }
 
 // ═══════════════════════════════════════
@@ -1408,19 +1550,57 @@ document.getElementById('fdOverlay').addEventListener('click',e=>{if(e.target===
 // ═══════════════════════════════════════
 //  ALERTS ENGINE
 // ═══════════════════════════════════════
-const LS_ALERTS='pw_alerts_v1';
+// Alerts are now stored directly on each portfolioData item as
+// item.alertAbove and item.alertBelow — no separate storage key.
+// Legacy pw_alerts_v1 is migrated on boot and then removed.
+
 const LS_ALERTLOG='pw_alertlog_v1';
-let alertsData={};   // {ticker:{above:num,below:num}}
-let alertLog=[];     // [{time,ticker,msg,type}]
+let alertLog=[];
 let allSignals=[];
 let sigFilter='ALL';
 
 function loadAlerts(){
-  try{alertsData=JSON.parse(localStorage.getItem(LS_ALERTS)||'{}');}catch(e){alertsData={};}
+  // Load alert log
   try{alertLog=JSON.parse(localStorage.getItem(LS_ALERTLOG)||'[]');}catch(e){alertLog=[];}
+  // Migrate legacy pw_alerts_v1 into portfolioData items
+  try{
+    const legacy=localStorage.getItem('pw_alerts_v1');
+    if(legacy){
+      const old=JSON.parse(legacy);
+      Object.entries(old).forEach(([ticker,a])=>{
+        const item=portfolioData.find(i=>i.ticker===ticker);
+        if(item){
+          if(a.above&&!item.alertAbove)item.alertAbove=a.above;
+          if(a.below&&!item.alertBelow)item.alertBelow=a.below;
+        }
+      });
+      localStorage.removeItem('pw_alerts_v1'); // clean up legacy key
+      saveToStorage(); // persist migrated alerts into portfolioData
+    }
+  }catch(e){}
 }
+
+// alertsData is now a live VIEW into portfolioData — not a separate object
+// Use these helpers everywhere instead of alertsData[ticker]
+function getAlert(ticker){
+  const item=portfolioData.find(i=>i.ticker===ticker);
+  return{above:item?.alertAbove||null, below:item?.alertBelow||null,
+    _firedAbove:item?._firedAbove||false, _firedBelow:item?._firedBelow||false};
+}
+function setAlert(ticker,above,below){
+  const item=portfolioData.find(i=>i.ticker===ticker);
+  if(!item)return;
+  item.alertAbove=above||null;
+  item.alertBelow=below||null;
+  saveToStorage();
+}
+function setAlertFired(ticker,key,val){
+  const item=portfolioData.find(i=>i.ticker===ticker);
+  if(item)item[key]=val;
+}
+
 function saveAlerts(){
-  localStorage.setItem(LS_ALERTS,JSON.stringify(alertsData));
+  saveToStorage(); // alerts live in portfolioData now
   localStorage.setItem(LS_ALERTLOG,JSON.stringify(alertLog));
 }
 
@@ -1430,17 +1610,18 @@ function renderAlertsList(){
   const items=portfolioData.filter(i=>i.view==='portfolio'||i.view==='watchlist');
   el.innerHTML=items.map(item=>{
     const ex=getEx(item.exchange),sym=ex.symbol;
-    const a=alertsData[item.ticker]||{};
+    const a=getAlert(item.ticker);
     const lp=livePrices[item.ticker];
     const aboveFired=a.above&&lp&&lp>=a.above;
     const belowFired=a.below&&lp&&lp<=a.below;
+    const tid=item.ticker.replace(/\./g,'_');
     return`<div class="alert-row">
       <span class="ar-ticker">${item.ticker}</span>
       <div class="ar-inputs">
         <label>▲ Above</label>
-        <input type="number" id="al_above_${item.ticker}" value="${a.above||''}" placeholder="${sym}—" step="any">
+        <input type="number" id="al_above_${tid}" value="${a.above||''}" placeholder="${sym}—" step="any">
         <label>▼ Below</label>
-        <input type="number" id="al_below_${item.ticker}" value="${a.below||''}" placeholder="${sym}—" step="any">
+        <input type="number" id="al_below_${tid}" value="${a.below||''}" placeholder="${sym}—" step="any">
         <button class="ar-save" onclick="saveAlert('${item.ticker}')">Save</button>
         ${aboveFired?`<span class="alert-fired up">▲ ABOVE ${sym}${fmtP(a.above)}</span>`:''}
         ${belowFired?`<span class="alert-fired down">▼ BELOW ${sym}${fmtP(a.below)}</span>`:''}
@@ -1451,39 +1632,37 @@ function renderAlertsList(){
 }
 
 function saveAlert(ticker){
-  const above=parseFloat(document.getElementById('al_above_'+ticker)?.value)||null;
-  const below=parseFloat(document.getElementById('al_below_'+ticker)?.value)||null;
-  if(!alertsData[ticker])alertsData[ticker]={};
-  alertsData[ticker].above=above;
-  alertsData[ticker].below=below;
-  saveAlerts();
-  toast('Alert saved for '+ticker+' ✓');
+  const tid=ticker.replace(/\./g,'_');
+  const above=parseFloat(document.getElementById('al_above_'+tid)?.value)||null;
+  const below=parseFloat(document.getElementById('al_below_'+tid)?.value)||null;
+  setAlert(ticker,above,below);
+  toast('Alert saved — stored in portfolio ✓');
   renderAlertsList();
+  loadHistoryChart && loadHistoryChart();
 }
 
 function checkAlerts(){
   let fired=0;
   portfolioData.forEach(item=>{
-    const a=alertsData[item.ticker];
-    if(!a)return;
+    const a=getAlert(item.ticker);
+    if(!a.above&&!a.below)return;
     const lp=livePrices[item.ticker];
     if(!lp)return;
     const ex=getEx(item.exchange),sym=ex.symbol;
-    const prevFiredAbove=a._firedAbove,prevFiredBelow=a._firedBelow;
-    if(a.above&&lp>=a.above&&!prevFiredAbove){
+    if(a.above&&lp>=a.above&&!a._firedAbove){
       const msg=`${item.ticker} crossed ABOVE ${sym}${fmtP(a.above)} — now at ${sym}${fmtP(lp)}`;
       logAlert(item.ticker,msg,'up');
       sendBrowserNotif('📈 Price Alert: '+item.ticker,msg);
-      alertsData[item.ticker]._firedAbove=true;fired++;
+      setAlertFired(item.ticker,'_firedAbove',true);fired++;
     }
-    if(a.above&&lp<a.above)alertsData[item.ticker]._firedAbove=false;
-    if(a.below&&lp<=a.below&&!prevFiredBelow){
+    if(a.above&&lp<a.above)setAlertFired(item.ticker,'_firedAbove',false);
+    if(a.below&&lp<=a.below&&!a._firedBelow){
       const msg=`${item.ticker} dropped BELOW ${sym}${fmtP(a.below)} — now at ${sym}${fmtP(lp)}`;
       logAlert(item.ticker,msg,'down');
       sendBrowserNotif('📉 Price Alert: '+item.ticker,msg);
-      alertsData[item.ticker]._firedBelow=true;fired++;
+      setAlertFired(item.ticker,'_firedBelow',true);fired++;
     }
-    if(a.below&&lp>a.below)alertsData[item.ticker]._firedBelow=false;
+    if(a.below&&lp>a.below)setAlertFired(item.ticker,'_firedBelow',false);
   });
   saveAlerts();
   updateAlertBadge();
@@ -1515,7 +1694,7 @@ function updateAlertBadge(){
   const firedCount=document.getElementById('firedCount');
   let count=0;
   portfolioData.forEach(item=>{
-    const a=alertsData[item.ticker];const lp=livePrices[item.ticker];if(!a||!lp)return;
+    const a=getAlert(item.ticker);const lp=livePrices[item.ticker];if(!lp)return;
     if(a.above&&lp>=a.above)count++;
     if(a.below&&lp<=a.below)count++;
   });
