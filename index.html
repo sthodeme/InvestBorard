@@ -299,6 +299,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div class="topbar-right">
       <span class="last-updated" id="lastUpdated"></span>
       <button class="btn" id="refreshBtn" onclick="refreshPrices()"><span class="icon">↻</span> Refresh prices</button>
+      <button class="btn" onclick="showManualPricePrompt()" title="Enter prices manually if auto-fetch fails">✎ Prices</button>
       <button class="btn" onclick="exportJSON()">⬇ Export JSON</button>
       <label class="btn" style="cursor:pointer">⬆ Import JSON<input type="file" accept=".json" id="importFile" style="display:none" onchange="importJSON(event)"></label>
     </div>
@@ -490,6 +491,19 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </div>
 </div>
 
+<!-- Manual Price Entry Modal -->
+<div class="modal-overlay" id="manualPriceOverlay">
+  <div class="modal" style="width:460px">
+    <h3>Manual Price Entry</h3>
+    <p style="font-size:11px;color:var(--text3);margin-bottom:1rem;line-height:1.6">Yahoo Finance is currently blocked by your browser or network. Enter current prices manually — they'll be saved and used until auto-fetch works again. Leave blank to keep last known price.</p>
+    <div id="manualPriceFields"></div>
+    <div class="modal-btns">
+      <button class="mbtn cancel" onclick="closeManualPrices()">Cancel</button>
+      <button class="mbtn save" onclick="saveManualPriceEntries()">Save prices</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -503,24 +517,52 @@ const EXCHANGES=[
 ];
 const CHART_COLORS=['#38bdf8','#a78bfa','#3dd68c','#f5a623','#f46e6e','#5b9cf6','#e879f9','#34d399','#fbbf24','#f87171','#60a5fa','#c084fc','#4ade80','#fb923c','#f472b6','#a3e635'];
 const RANGE_DAYS={'1M':30,'3M':90,'6M':180,'1Y':365,'3Y':1095,'5Y':1825,'MAX':36500};
-// Multiple CORS proxies — tried in order until one works
-const PROXIES=[
-  url=>`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-  url=>`https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+
+// Yahoo Finance API — try multiple endpoints and proxies
+// Yahoo v7 query endpoint is more permissive than v8 chart
+const YF_PROXIES=[
+  (url)=>`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  (url)=>`https://corsproxy.io/?${encodeURIComponent(url)}`,
+  (url)=>`https://thingproxy.freeboard.io/fetch/${url}`,
+  (url)=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
 ];
 async function proxyFetch(url){
-  for(const makeProxy of PROXIES){
+  for(const makeProxy of YF_PROXIES){
     try{
-      const r=await fetch(makeProxy(url),{signal:AbortSignal.timeout(8000)});
+      const r=await fetch(makeProxy(url),{signal:AbortSignal.timeout(10000)});
       if(!r.ok)continue;
       const text=await r.text();
-      // allorigins wraps in {contents:...}, others return raw
+      if(!text||text.length<10)continue;
       try{const j=JSON.parse(text);return j.contents?j.contents:text;}
       catch(e){return text;}
     }catch(e){continue;}
   }
   throw new Error('All proxies failed for: '+url);
+}
+
+// Try Yahoo Finance v7 query (more CORS-friendly) first, fall back to v8 chart
+async function fetchYahooPrice(ticker){
+  // Method 1: Yahoo v7 quote endpoint
+  const v7url=`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketPreviousClose`;
+  try{
+    const text=await proxyFetch(v7url);
+    const d=JSON.parse(text);
+    const q=d?.quoteResponse?.result?.[0];
+    if(q?.regularMarketPrice){
+      return{price:q.regularMarketPrice,changePct:q.regularMarketChangePercent||0};
+    }
+  }catch(e){}
+  // Method 2: Yahoo v8 chart endpoint
+  const v8url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=2d`;
+  try{
+    const text=await proxyFetch(v8url);
+    const d=JSON.parse(text);
+    const meta=d.chart.result[0].meta;
+    const lp=meta.regularMarketPrice||meta.previousClose;
+    const prev=meta.chartPreviousClose||meta.previousClose;
+    return{price:lp,changePct:prev?(lp-prev)/prev*100:0};
+  }catch(e){}
+  return null;
 }
 
 // ═══════════════════════════════════════
@@ -1217,21 +1259,37 @@ function renderConsolidated(){
 // ═══════════════════════════════════════
 //  PRICE FETCHING
 // ═══════════════════════════════════════
+// manualPrices: user can set prices directly when API fails
+let manualPrices={};
+function loadManualPrices(){try{manualPrices=JSON.parse(localStorage.getItem('pw_manual_prices')||'{}');}catch(e){manualPrices={};}}
+function saveManualPrices(){localStorage.setItem('pw_manual_prices',JSON.stringify(manualPrices));}
+
 async function fetchPrice(ticker){
-  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=2d`;
+  // Check manual override first
+  if(manualPrices[ticker]){
+    livePrices[ticker]=manualPrices[ticker].price;
+    priceChange[ticker]=0;
+    return;
+  }
   try{
-    const text=await proxyFetch(url);
-    const d=JSON.parse(text);
-    const meta=d.chart.result[0].meta;
-    const lp=meta.regularMarketPrice||meta.previousClose;
-    const prev=meta.chartPreviousClose||meta.previousClose;
-    livePrices[ticker]=lp;priceChange[ticker]=prev?(lp-prev)/prev*100:0;
-  }catch(e){console.warn('Price fetch failed:',ticker,e.message);}
+    const result=await fetchYahooPrice(ticker);
+    if(result){
+      livePrices[ticker]=result.price;
+      priceChange[ticker]=result.changePct;
+    }
+    // else: silently keep last known price
+  }catch(e){/* silent — no console noise */}
 }
+
 async function refreshPrices(){
   const btn=document.getElementById('refreshBtn');btn.classList.add('spin');
   const tickers=[...new Set(portfolioData.map(i=>i.ticker))];
-  await Promise.all(tickers.map(t=>fetchPrice(t)));
+  let fetched=0,failed=0;
+  await Promise.all(tickers.map(async t=>{
+    const before=livePrices[t];
+    await fetchPrice(t);
+    if(livePrices[t]!=null)fetched++;else failed++;
+  }));
   histCache={};fundDetailsCache={};
   checkAlerts();
   saveToStorage();renderTabs();renderTable();
@@ -1241,7 +1299,14 @@ async function refreshPrices(){
   if(activeNav==='alerts'){renderAlertsList();renderAlertLog();}
   btn.classList.remove('spin');
   document.getElementById('lastUpdated').textContent='Updated: '+new Date().toLocaleString();
-  toast('Prices refreshed ✓');
+  if(failed>0&&fetched===0){
+    toast(`Prices unavailable — Yahoo Finance blocked. Use manual price entry.`,'err');
+    showManualPricePrompt();
+  } else if(failed>0){
+    toast(`${fetched} prices loaded, ${failed} failed`,'err');
+  } else {
+    toast('Prices refreshed ✓');
+  }
 }
 
 // ═══════════════════════════════════════
@@ -1679,14 +1744,66 @@ function renderSignalGrid(){
   grid.innerHTML=filtered.map(renderSignalCard).join('');
 }
 
+// ═══════════════════════════════════════
+//  MANUAL PRICE ENTRY
+// ═══════════════════════════════════════
+function showManualPricePrompt(){
+  const fields=document.getElementById('manualPriceFields');
+  const tickers=[...new Set(portfolioData.map(i=>i.ticker))];
+  fields.innerHTML=tickers.map(ticker=>{
+    const item=portfolioData.find(i=>i.ticker===ticker);
+    const ex=item?getEx(item.exchange):EXCHANGES[0];
+    const current=manualPrices[ticker]?.price||livePrices[ticker]||'';
+    return`<div class="form-row" style="margin-bottom:8px">
+      <label style="display:flex;justify-content:space-between">
+        <span>${ticker}</span>
+        <span style="color:var(--text3)">${ex.symbol} ${item?.name?.substring(0,25)||''}</span>
+      </label>
+      <input type="number" id="mp_${ticker.replace(/\./g,'_')}" value="${current||''}"
+        placeholder="Enter current price" step="any" min="0"
+        style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:6px 10px;border-radius:6px;font-family:var(--font);font-size:12px;width:100%;outline:none">
+    </div>`;
+  }).join('');
+  document.getElementById('manualPriceOverlay').classList.add('open');
+}
+
+function saveManualPriceEntries(){
+  const tickers=[...new Set(portfolioData.map(i=>i.ticker))];
+  let saved=0;
+  tickers.forEach(ticker=>{
+    const el=document.getElementById('mp_'+ticker.replace(/\./g,'_'));
+    const val=parseFloat(el?.value);
+    if(val>0){
+      manualPrices[ticker]={price:val,setAt:new Date().toISOString()};
+      livePrices[ticker]=val;
+      priceChange[ticker]=0;
+      saved++;
+    }
+  });
+  saveManualPrices();
+  closeManualPrices();
+  saveToStorage();renderTabs();renderTable();
+  if(activeNav==='charts')renderCharts();
+  if(activeNav==='consolidated')renderConsolidated();
+  toast(`${saved} prices saved manually ✓`);
+}
+
+function closeManualPrices(){
+  document.getElementById('manualPriceOverlay').classList.remove('open');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const mo=document.getElementById('manualPriceOverlay');
+  if(mo)mo.addEventListener('click',e=>{if(e.target===mo)closeManualPrices();});
+});
 
 (function init(){
   const hadData=loadFromStorage();
   if(!hadData)loadSeedData();
   loadAlerts();
+  loadManualPrices();
   initChartSelects();
   initNotifBanner();
-  // Always start on Portfolio tab, Portfolio view
   document.getElementById('viewSelect').value='portfolio';
   renderTabs();
   renderTable();
