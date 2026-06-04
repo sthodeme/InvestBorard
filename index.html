@@ -617,10 +617,10 @@ function loadFromStorage(){
 }
 function loadSeedData(){
   portfolioData=[
-    {id:1,ticker:'0P0000UDS0.BO',name:'HDFC Gold ETF Fund of Fund - Regular Growth',type:'MF',qty:100,buyPrice:25,buyDate:'',exchange:'NSE',view:'watchlist',notes:'HDFC Gold FoF Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
-    {id:2,ticker:'0P00005WNE.BO',name:'HDFC Large Cap Fund - Regular Growth',type:'MF',qty:100,buyPrice:950,buyDate:'',exchange:'NSE',view:'watchlist',notes:'HDFC Large Cap Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
-    {id:3,ticker:'0P00016H6Y.BO',name:'Mirae Asset Aggressive Hybrid Fund - Regular Growth',type:'MF',qty:100,buyPrice:28,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Mirae Aggressive Hybrid Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
-    {id:4,ticker:'0P00012ALU.BO',name:'Motilal Oswal Midcap Fund - Regular Growth',type:'MF',qty:100,buyPrice:45,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Motilal Oswal Midcap Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
+    {id:1,ticker:'0P0000UDS0.BO',name:'HDFC Gold ETF Fund of Fund - Regular Growth',type:'MF',qty:100,buyPrice:25,buyDate:'',exchange:'NSE',view:'portfolio',notes:'HDFC Gold FoF Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
+    {id:2,ticker:'0P00005WNE.BO',name:'HDFC Large Cap Fund - Regular Growth',type:'MF',qty:100,buyPrice:950,buyDate:'',exchange:'NSE',view:'portfolio',notes:'HDFC Large Cap Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
+    {id:3,ticker:'0P00016H6Y.BO',name:'Mirae Asset Aggressive Hybrid Fund - Regular Growth',type:'MF',qty:100,buyPrice:28,buyDate:'',exchange:'NSE',view:'portfolio',notes:'Mirae Aggressive Hybrid Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
+    {id:4,ticker:'0P00012ALU.BO',name:'Motilal Oswal Midcap Fund - Regular Growth',type:'MF',qty:100,buyPrice:45,buyDate:'',exchange:'NSE',view:'portfolio',notes:'Motilal Oswal Midcap Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
     {id:5,ticker:'TATASTEEL.NS',name:'Tata Steel Limited',type:'Share',qty:100,buyPrice:150,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Metals sector',manualRating:0,manualNotes:'',indexSuitable:''},
     {id:6,ticker:'METAL.NS',name:'Mirae Asset Nifty Metal ETF',type:'ETF',qty:100,buyPrice:90,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Nifty Metal Index ETF',manualRating:0,manualNotes:'',indexSuitable:'yes'},
     {id:7,ticker:'METALIETF.NS',name:'ICICI Prudential Nifty Metal ETF',type:'ETF',qty:100,buyPrice:90,buyDate:'',exchange:'NSE',view:'watchlist',notes:'ICICI Nifty Metal Index ETF',manualRating:0,manualNotes:'',indexSuitable:'yes'},
@@ -1822,7 +1822,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadManualPrices();
   initChartSelects();
   initNotifBanner();
-  document.getElementById('viewSelect').value='watchlist';
+  document.getElementById('viewSelect').value='portfolio';
   renderTabs();
   renderTable();
   refreshPrices();
