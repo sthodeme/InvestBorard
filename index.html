@@ -576,8 +576,8 @@ let fundDetailsCache={};
 // ═══════════════════════════════════════
 //  STORAGE
 // ═══════════════════════════════════════
-const LS_KEY='portfoliowatch_v3';
-const LS_KEYS_LEGACY=['portfoliowatch_v2','portfoliowatch_v1'];
+const LS_KEY='portfoliowatch_v4';
+const LS_KEYS_LEGACY=['portfoliowatch_v3','portfoliowatch_v2','portfoliowatch_v1'];
 function saveToStorage(){
   try{localStorage.setItem(LS_KEY,JSON.stringify({portfolioData,livePrices,priceChange,nextId,activeExchange,activeView:document.getElementById('viewSelect')?.value||'portfolio',savedAt:new Date().toISOString()}));}catch(e){}
 }
@@ -1802,20 +1802,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 (function init(){
-  // Migrate: remove old version keys (v1, v2 only — v3 is current)
-  ['portfoliowatch_v1','portfoliowatch_v2'].forEach(k=>localStorage.removeItem(k));
-  // Force reload seed if current storage has old sample tickers
-  const raw=localStorage.getItem('portfoliowatch_v3');
-  if(raw){
-    try{
-      const d=JSON.parse(raw);
-      const tickers=(d.portfolioData||[]).map(i=>i.ticker);
-      // If data still has old sample tickers, wipe and reload seed
-      const oldSamples=['NIFTYBEES.NS','JUNIORBEES.NS','SPY','QQQ','EXS1.DE'];
-      const hasOld=oldSamples.some(t=>tickers.includes(t));
-      if(hasOld)localStorage.removeItem('portfoliowatch_v3');
-    }catch(e){}
-  }
+  // v4 key is fresh — no old data will exist, seed loads automatically
+  // Legacy keys left untouched (user's old data still recoverable if needed)
   const hadData=loadFromStorage();
   if(!hadData)loadSeedData();
   loadAlerts();
