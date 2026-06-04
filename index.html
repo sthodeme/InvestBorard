@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PortfolioWatch</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
@@ -19,7 +20,6 @@
 
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px}
 
-/* ── Layout ── */
 .app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:52px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;gap:12px}
 .logo{font-size:16px;font-weight:700;letter-spacing:0.06em;color:var(--teal);white-space:nowrap}
@@ -28,16 +28,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .main{display:flex;flex-direction:column;flex:1;overflow:hidden}
 .scroll-area{flex:1;overflow-y:auto}
 
-/* ── Buttons ── */
+/* Buttons */
 .btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:5px 12px;border-radius:6px;cursor:pointer;font-family:var(--font);font-size:12px;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;white-space:nowrap}
 .btn:hover{border-color:var(--teal);color:var(--teal)}
 .btn.primary{background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.3);color:var(--teal)}
 .btn.primary:hover{background:rgba(56,189,248,0.2)}
-.btn.danger:hover{border-color:var(--red);color:var(--red)}
 .btn.spin .icon{display:inline-block;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── Exchange tabs ── */
+/* Nav tabs (main sections) */
+.nav-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.ntab{padding:10px 20px;cursor:pointer;font-size:11px;font-weight:600;letter-spacing:0.08em;color:var(--text3);border-bottom:2px solid transparent;transition:all 0.15s}
+.ntab:hover{color:var(--text2)}
+.ntab.active{color:var(--teal);border-bottom-color:var(--teal)}
+
+/* Exchange tabs */
 .exchange-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;overflow-x:auto}
 .etab{padding:11px 22px;cursor:pointer;font-size:11px;font-weight:600;letter-spacing:0.09em;color:var(--text3);border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap}
 .etab:hover{color:var(--text2)}
@@ -45,13 +50,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .badge{display:inline-block;background:var(--bg3);color:var(--text3);font-size:10px;padding:1px 6px;border-radius:10px;margin-left:6px}
 .etab.active .badge{background:rgba(56,189,248,0.15);color:var(--teal)}
 
-/* ── Controls ── */
+/* Controls */
 .controls{display:flex;align-items:center;gap:10px;padding:9px 1.5rem;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
 .ctrl-label{font-size:10px;color:var(--text3);letter-spacing:0.08em}
 select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:6px;font-family:var(--font);font-size:12px;cursor:pointer;outline:none}
 select:focus{border-color:var(--teal)}
 
-/* ── Summary bar ── */
+/* Summary bar */
 .summary-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--border);flex-shrink:0}
 .scard{background:var(--bg2);padding:10px 1.5rem}
 .scard .sl{font-size:9px;color:var(--text3);letter-spacing:0.1em;margin-bottom:3px}
@@ -59,7 +64,7 @@ select:focus{border-color:var(--teal)}
 .scard .sc{font-size:11px;margin-top:1px}
 .pos{color:var(--green)}.neg{color:var(--red)}.neu{color:var(--text2)}
 
-/* ── Table ── */
+/* Table */
 .table-wrap{padding:0 1.5rem 2rem;overflow-x:auto}
 table{width:100%;border-collapse:collapse;margin-top:0.75rem;min-width:600px}
 th{font-size:10px;letter-spacing:0.08em;color:var(--text3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none;cursor:pointer}
@@ -79,14 +84,14 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .edit-btn:hover{color:var(--amber);background:rgba(245,166,35,0.1)}
 .pnl-sub{font-size:10px;margin-top:1px}
 
-/* ── Status dot ── */
+/* Status dot */
 .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0}
 .dot-ok{background:var(--green);box-shadow:0 0 5px var(--green)}
 .dot-partial{background:var(--amber);animation:pulse 1.2s ease infinite}
 .dot-none{background:var(--red)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
-/* ── Modal ── */
+/* Modal */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:flex-start;justify-content:center;padding-top:80px}
 .modal-overlay.open{display:flex}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:1.5rem;width:380px;max-width:95vw;max-height:85vh;overflow-y:auto}
@@ -105,20 +110,61 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .mbtn.save{background:rgba(56,189,248,0.15);color:var(--teal);border-color:rgba(56,189,248,0.4)}
 .mbtn.save:hover{background:rgba(56,189,248,0.25)}
 
-/* ── Toast ── */
+/* Toast */
 #toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 18px;border-radius:8px;font-size:12px;opacity:0;transform:translateY(10px);transition:all 0.25s;z-index:999;pointer-events:none}
 #toast.show{opacity:1;transform:translateY(0)}
 #toast.ok{border-color:rgba(61,214,140,0.5);color:var(--green)}
 #toast.err{border-color:rgba(244,110,110,0.5);color:var(--red)}
 
-/* ── Scrollbar ── */
+/* Scrollbar */
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--text3)}
 
-/* ── Last updated ── */
 .last-updated{font-size:10px;color:var(--text3)}
+
+/* ── CHARTS TAB ── */
+.charts-wrap{padding:1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+@media(max-width:900px){.charts-wrap{grid-template-columns:1fr}}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.25rem}
+.chart-card h4{font-size:11px;letter-spacing:0.08em;color:var(--text3);margin-bottom:1rem}
+.chart-card.full{grid-column:1/-1}
+.chart-container{position:relative;height:260px}
+.donut-legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:1rem}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ── CONSOLIDATED TAB ── */
+.consolidated-wrap{padding:1.5rem}
+.fx-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);border-radius:8px;overflow:hidden;margin-bottom:1.5rem}
+.fx-card{background:var(--bg2);padding:14px 1.25rem}
+.fx-card .fl{font-size:10px;color:var(--text3);letter-spacing:0.08em;margin-bottom:4px}
+.fx-card .fv{font-size:20px;font-weight:700}
+.fx-card .fs{font-size:11px;color:var(--text3);margin-top:2px}
+.ex-section{margin-bottom:1.5rem}
+.ex-header{display:flex;align-items:center;justify-content:space-between;padding:10px 1rem;background:var(--bg3);border-radius:6px 6px 0 0;border:1px solid var(--border);border-bottom:none}
+.ex-header .ex-name{font-size:12px;font-weight:700;letter-spacing:0.06em}
+.ex-header .ex-stats{display:flex;gap:1.5rem}
+.ex-stat{text-align:right}
+.ex-stat .esl{font-size:9px;color:var(--text3);letter-spacing:0.06em}
+.ex-stat .esv{font-size:13px;font-weight:700}
+.ex-table{width:100%;border-collapse:collapse;border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px;overflow:hidden}
+.ex-table th{font-size:10px;letter-spacing:0.07em;color:var(--text3);padding:7px 12px;background:var(--bg3);border-bottom:1px solid var(--border);text-align:left}
+.ex-table th.r,.ex-table td.r{text-align:right}
+.ex-table td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px}
+.ex-table tr:last-child td{border-bottom:none}
+.ex-table tr:hover td{background:rgba(255,255,255,0.02)}
+.grand-total{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-top:0.5rem}
+.gt-label{font-size:11px;color:var(--text3);letter-spacing:0.08em}
+.gt-val{font-size:22px;font-weight:700;color:var(--teal)}
+.gt-pnl{font-size:14px;font-weight:700}
+.fx-note{font-size:10px;color:var(--text3);margin-top:0.5rem;text-align:right}
+.fx-rate-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:1rem;padding:10px 1rem;background:var(--bg2);border:1px solid var(--border);border-radius:6px}
+.fx-rate-row label{font-size:10px;color:var(--text3);letter-spacing:0.06em}
+.fx-rate-row input{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:4px;font-family:var(--font);font-size:12px;width:90px;outline:none}
+.fx-rate-row input:focus{border-color:var(--teal)}
+.section-hidden{display:none}
 </style>
 </head>
 <body>
@@ -142,45 +188,97 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </div>
 
   <div class="main">
-    <!-- Exchange tabs -->
-    <div class="exchange-tabs" id="exchangeTabs"></div>
 
-    <!-- Controls -->
-    <div class="controls">
-      <span class="ctrl-label">VIEW</span>
-      <select id="viewSelect" onchange="renderTable()">
-        <option value="portfolio">Portfolio</option>
-        <option value="watchlist">Watchlist</option>
-      </select>
-      <span class="ctrl-label">TYPE</span>
-      <select id="typeFilter" onchange="renderTable()">
-        <option value="all">All types</option>
-        <option value="ETF">ETF</option>
-        <option value="MF">Mutual Fund</option>
-        <option value="Share">Share</option>
-      </select>
-      <button class="btn primary" style="margin-left:auto" onclick="openModal()">+ Add instrument</button>
+    <!-- Main nav tabs -->
+    <div class="nav-tabs">
+      <div class="ntab active" id="ntab-portfolio" onclick="switchNav('portfolio')">PORTFOLIO</div>
+      <div class="ntab" id="ntab-charts" onclick="switchNav('charts')">CHARTS</div>
+      <div class="ntab" id="ntab-consolidated" onclick="switchNav('consolidated')">CONSOLIDATED</div>
     </div>
 
-    <!-- Summary bar -->
-    <div class="summary-bar" id="summaryBar"></div>
-
-    <!-- Scroll area -->
-    <div class="scroll-area">
-      <div class="table-wrap">
-        <table>
-          <thead id="tableHead"></thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-        <div class="empty" id="emptyMsg" style="display:none">
-          No instruments found in this view.<br>
-          Click <strong>+ Add instrument</strong> to get started,<br>
-          or switch view / type filter above.
+    <!-- ═══ PORTFOLIO SECTION ═══ -->
+    <div id="section-portfolio">
+      <div class="exchange-tabs" id="exchangeTabs"></div>
+      <div class="controls">
+        <span class="ctrl-label">VIEW</span>
+        <select id="viewSelect" onchange="renderTable()">
+          <option value="portfolio">Portfolio</option>
+          <option value="watchlist">Watchlist</option>
+        </select>
+        <span class="ctrl-label">TYPE</span>
+        <select id="typeFilter" onchange="renderTable()">
+          <option value="all">All types</option>
+          <option value="ETF">ETF</option>
+          <option value="MF">Mutual Fund</option>
+          <option value="Share">Share</option>
+        </select>
+        <button class="btn primary" style="margin-left:auto" onclick="openModal()">+ Add instrument</button>
+      </div>
+      <div class="summary-bar" id="summaryBar"></div>
+      <div class="scroll-area">
+        <div class="table-wrap">
+          <table>
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+          <div class="empty" id="emptyMsg" style="display:none">
+            No instruments found in this view.<br>
+            Click <strong>+ Add instrument</strong> to get started.
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
+    <!-- ═══ CHARTS SECTION ═══ -->
+    <div id="section-charts" class="section-hidden scroll-area">
+      <div style="padding:1rem 1.5rem 0;display:flex;align-items:center;gap:10px;background:var(--bg2);border-bottom:1px solid var(--border)">
+        <span class="ctrl-label">EXCHANGE</span>
+        <select id="chartExSelect" onchange="renderCharts()">
+        </select>
+        <span class="ctrl-label" style="margin-left:10px">VIEW</span>
+        <select id="chartViewSelect" onchange="renderCharts()">
+          <option value="portfolio">Portfolio</option>
+          <option value="watchlist">Watchlist</option>
+          <option value="all">All</option>
+        </select>
+      </div>
+      <div class="charts-wrap">
+        <div class="chart-card">
+          <h4>ALLOCATION BY INSTRUMENT (CURRENT VALUE)</h4>
+          <div class="chart-container"><canvas id="donutChart"></canvas></div>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+        <div class="chart-card">
+          <h4>ALLOCATION BY TYPE</h4>
+          <div class="chart-container"><canvas id="typeChart"></canvas></div>
+          <div class="donut-legend" id="typeLegend"></div>
+        </div>
+        <div class="chart-card full">
+          <h4>P&L BY INSTRUMENT (NATIVE CURRENCY)</h4>
+          <div class="chart-container" style="height:300px"><canvas id="pnlChart"></canvas></div>
+        </div>
+        <div class="chart-card full">
+          <h4>INVESTED vs CURRENT VALUE BY INSTRUMENT</h4>
+          <div class="chart-container" style="height:300px"><canvas id="valChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CONSOLIDATED SECTION ═══ -->
+    <div id="section-consolidated" class="section-hidden scroll-area">
+      <div style="padding:1rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--border)">
+        <div class="fx-rate-row">
+          <label>USD → INR</label>
+          <input type="number" id="fxUSD" value="83.5" step="0.1" onchange="renderConsolidated()">
+          <label style="margin-left:12px">EUR → INR</label>
+          <input type="number" id="fxEUR" value="90.2" step="0.1" onchange="renderConsolidated()">
+          <span style="font-size:10px;color:var(--text3);margin-left:8px">Edit rates manually · auto-fetch coming soon</span>
+        </div>
+      </div>
+      <div class="consolidated-wrap" id="consolidatedWrap"></div>
+    </div>
+
+  </div>
 </div>
 
 <!-- Add / Edit Modal -->
@@ -190,11 +288,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div class="form-row">
       <label>TICKER SYMBOL</label>
       <input id="fTicker" placeholder="e.g. NIFTYBEES.NS, SPY, EXS1.DE">
-      <div class="hint">
-        NSE/BSE → suffix <code>.NS</code> or <code>.BO</code> &nbsp;|&nbsp;
-        DAX → suffix <code>.DE</code> &nbsp;|&nbsp;
-        NYSE/NASDAQ → no suffix
-      </div>
+      <div class="hint">NSE/BSE → <code>.NS</code> or <code>.BO</code> &nbsp;|&nbsp; DAX → <code>.DE</code> &nbsp;|&nbsp; NYSE/NASDAQ → no suffix</div>
     </div>
     <div class="form-row">
       <label>NAME / DESCRIPTION</label>
@@ -203,18 +297,11 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     <div class="form-grid">
       <div class="form-row">
         <label>TYPE</label>
-        <select id="fType">
-          <option value="ETF">ETF</option>
-          <option value="MF">Mutual Fund</option>
-          <option value="Share">Share</option>
-        </select>
+        <select id="fType"><option value="ETF">ETF</option><option value="MF">Mutual Fund</option><option value="Share">Share</option></select>
       </div>
       <div class="form-row">
         <label>VIEW</label>
-        <select id="fView">
-          <option value="portfolio">Portfolio</option>
-          <option value="watchlist">Watchlist</option>
-        </select>
+        <select id="fView"><option value="portfolio">Portfolio</option><option value="watchlist">Watchlist</option></select>
       </div>
     </div>
     <div class="form-row">
@@ -242,17 +329,22 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   </div>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
 <script>
 // ═══════════════════════════════════════════════
-//  CONFIG — mirrors data/exchanges.json
+//  CONFIG
 // ═══════════════════════════════════════════════
 const EXCHANGES = [
-  {id:'NSE', label:'NSE / BSE', currency:'INR', symbol:'₹', color:'#38bdf8'},
-  {id:'DAX', label:'DAX',       currency:'EUR', symbol:'€', color:'#a78bfa'},
-  {id:'NYSE',label:'NYSE / NASDAQ', currency:'USD', symbol:'$', color:'#3dd68c'},
+  {id:'NSE',  label:'NSE / BSE',      currency:'INR', symbol:'₹', color:'#38bdf8', inrRate:1},
+  {id:'DAX',  label:'DAX',            currency:'EUR', symbol:'€', color:'#a78bfa', inrRate:90.2},
+  {id:'NYSE', label:'NYSE / NASDAQ',  currency:'USD', symbol:'$', color:'#3dd68c', inrRate:83.5},
+];
+
+const CHART_COLORS = [
+  '#38bdf8','#a78bfa','#3dd68c','#f5a623','#f46e6e','#5b9cf6',
+  '#e879f9','#34d399','#fbbf24','#f87171','#60a5fa','#c084fc',
+  '#4ade80','#fb923c','#f472b6','#a3e635'
 ];
 
 // ═══════════════════════════════════════════════
@@ -266,6 +358,8 @@ let editingId      = null;
 let sortKey        = 'ticker';
 let sortDir        = 1;
 let nextId         = 1;
+let activeNav      = 'portfolio';
+let charts         = {};
 
 // ═══════════════════════════════════════════════
 //  LOCALSTORAGE
@@ -275,11 +369,7 @@ const LS_KEY = 'portfoliowatch_v2';
 function saveToStorage() {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify({
-      portfolioData,
-      livePrices,
-      priceChange,
-      nextId,
-      activeExchange,
+      portfolioData, livePrices, priceChange, nextId, activeExchange,
       savedAt: new Date().toISOString()
     }));
   } catch(e) { console.warn('Storage save failed', e); }
@@ -303,9 +393,6 @@ function loadFromStorage() {
   } catch(e) { return false; }
 }
 
-// ═══════════════════════════════════════════════
-//  SEED DATA — loads only if localStorage empty
-// ═══════════════════════════════════════════════
 function loadSeedData() {
   portfolioData = [
     {id:1,ticker:'NIFTYBEES.NS',name:'Nippon Nifty BeES ETF',type:'ETF',qty:200,buyPrice:220,exchange:'NSE',view:'portfolio',notes:''},
@@ -336,7 +423,6 @@ function fmt(n) {
 function fmtP(n) {
   return n >= 1000 ? n.toLocaleString('en-IN', {maximumFractionDigits:2}) : n.toFixed(2);
 }
-
 function toast(msg, type='ok') {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -346,14 +432,27 @@ function toast(msg, type='ok') {
 }
 
 // ═══════════════════════════════════════════════
-//  RENDER TABS
+//  NAV SWITCHING
+// ═══════════════════════════════════════════════
+function switchNav(nav) {
+  activeNav = nav;
+  ['portfolio','charts','consolidated'].forEach(n => {
+    document.getElementById('section-' + n).classList.toggle('section-hidden', n !== nav);
+    document.getElementById('ntab-' + n).classList.toggle('active', n === nav);
+  });
+  if (nav === 'charts') renderCharts();
+  if (nav === 'consolidated') renderConsolidated();
+}
+
+// ═══════════════════════════════════════════════
+//  PORTFOLIO TAB
 // ═══════════════════════════════════════════════
 function renderTabs() {
   document.getElementById('exchangeTabs').innerHTML = EXCHANGES.map(ex => {
     const count = portfolioData.filter(i => i.exchange === ex.id).length;
     return `<div class="etab${ex.id === activeExchange ? ' active' : ''}"
       onclick="switchExchange('${ex.id}')"
-      style="${ex.id === activeExchange ? 'color:' + ex.color + ';border-bottom-color:' + ex.color : ''}">
+      style="${ex.id === activeExchange ? 'color:'+ex.color+';border-bottom-color:'+ex.color : ''}">
       ${ex.label}<span class="badge">${count}</span>
     </div>`;
   }).join('');
@@ -366,168 +465,370 @@ function switchExchange(id) {
   renderTable();
 }
 
-// ═══════════════════════════════════════════════
-//  SUMMARY BAR
-// ═══════════════════════════════════════════════
 function renderSummary() {
   const view  = document.getElementById('viewSelect').value;
   const items = portfolioData.filter(i => i.exchange === activeExchange && i.view === view);
   const ex    = getEx(activeExchange);
   const sym   = ex.symbol;
-
-  let totalCost = 0, totalVal = 0, withPrices = 0;
+  let totalCost=0, totalVal=0, withPrices=0;
   items.forEach(i => {
     totalCost += i.qty * i.buyPrice;
-    if (livePrices[i.ticker] != null) {
-      totalVal += i.qty * livePrices[i.ticker];
-      withPrices++;
-    }
+    if (livePrices[i.ticker] != null) { totalVal += i.qty * livePrices[i.ticker]; withPrices++; }
   });
   const hasPrices = withPrices > 0;
   const pnl = totalVal - totalCost;
-  const pnlPct = totalCost > 0 ? pnl / totalCost * 100 : 0;
-
-  const dotClass = items.length === 0 ? 'dot-none'
-    : withPrices === items.length ? 'dot-ok'
-    : withPrices > 0             ? 'dot-partial'
-    : 'dot-none';
-
+  const pnlPct = totalCost > 0 ? pnl/totalCost*100 : 0;
+  const dotClass = items.length===0?'dot-none': withPrices===items.length?'dot-ok': withPrices>0?'dot-partial':'dot-none';
   document.getElementById('summaryBar').innerHTML = `
     <div class="scard"><div class="sl">INSTRUMENTS</div><div class="sv neu">${items.length}</div></div>
     <div class="scard"><div class="sl">INVESTED</div><div class="sv neu">${sym}${fmt(totalCost)}</div></div>
-    <div class="scard">
-      <div class="sl">CURRENT VALUE</div>
-      <div class="sv ${hasPrices ? (pnl >= 0 ? 'pos' : 'neg') : 'neu'}">${hasPrices ? sym + fmt(totalVal) : '—'}</div>
-    </div>
-    <div class="scard">
-      <div class="sl">TOTAL P&L</div>
-      <div class="sv ${hasPrices ? (pnl >= 0 ? 'pos' : 'neg') : 'neu'}">${hasPrices ? (pnl >= 0 ? '+' : '') + sym + fmt(Math.abs(pnl)) : '—'}</div>
-      <div class="sc ${hasPrices ? (pnl >= 0 ? 'pos' : 'neg') : 'neu'}">${hasPrices ? (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%' : ''}</div>
-    </div>
-    <div class="scard">
-      <div class="sl">PRICE STATUS</div>
-      <div class="sv" style="display:flex;align-items:center;font-size:13px">
-        <span class="dot ${dotClass}"></span>
-        <span class="neu">${withPrices}/${items.length} loaded</span>
-      </div>
-    </div>
+    <div class="scard"><div class="sl">CURRENT VALUE</div><div class="sv ${hasPrices?(pnl>=0?'pos':'neg'):'neu'}">${hasPrices?sym+fmt(totalVal):'—'}</div></div>
+    <div class="scard"><div class="sl">TOTAL P&L</div><div class="sv ${hasPrices?(pnl>=0?'pos':'neg'):'neu'}">${hasPrices?(pnl>=0?'+':'')+sym+fmt(Math.abs(pnl)):'—'}</div><div class="sc ${hasPrices?(pnl>=0?'pos':'neg'):'neu'}">${hasPrices?(pnlPct>=0?'+':'')+pnlPct.toFixed(2)+'%':''}</div></div>
+    <div class="scard"><div class="sl">PRICE STATUS</div><div class="sv" style="display:flex;align-items:center;font-size:13px"><span class="dot ${dotClass}"></span><span class="neu">${withPrices}/${items.length}</span></div></div>
     <div class="scard"><div class="sl">EXCHANGE</div><div class="sv" style="color:${ex.color}">${ex.currency}</div></div>
   `;
 }
 
-// ═══════════════════════════════════════════════
-//  MAIN TABLE
-// ═══════════════════════════════════════════════
 function getFilteredItems() {
   const view = document.getElementById('viewSelect').value;
   const type = document.getElementById('typeFilter').value;
-  let items  = portfolioData.filter(i =>
-    i.exchange === activeExchange &&
-    i.view     === view &&
-    (type === 'all' || i.type === type)
+  let items = portfolioData.filter(i =>
+    i.exchange === activeExchange && i.view === view && (type==='all'||i.type===type)
   );
-  items.sort((a, b) => {
-    let av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
-    if (sortKey === 'pnl' || sortKey === 'pnlPct' || sortKey === 'currentVal') {
-      av = computeSort(a, sortKey);
-      bv = computeSort(b, sortKey);
-    }
-    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+  items.sort((a,b) => {
+    let av = a[sortKey]??'', bv = b[sortKey]??'';
+    if(['pnl','pnlPct','currentVal'].includes(sortKey)) { av=computeSort(a,sortKey); bv=computeSort(b,sortKey); }
+    return av<bv?-sortDir:av>bv?sortDir:0;
   });
   return items;
 }
-
 function computeSort(item, key) {
   const lp = livePrices[item.ticker];
-  if (lp == null) return -Infinity;
-  if (key === 'currentVal') return item.qty * lp;
-  if (key === 'pnl')        return item.qty * lp - item.qty * item.buyPrice;
-  if (key === 'pnlPct') {
-    const cost = item.qty * item.buyPrice;
-    return cost > 0 ? (item.qty * lp - cost) / cost * 100 : 0;
-  }
+  if (lp==null) return -Infinity;
+  if (key==='currentVal') return item.qty*lp;
+  if (key==='pnl') return item.qty*lp - item.qty*item.buyPrice;
+  if (key==='pnlPct') { const c=item.qty*item.buyPrice; return c>0?(item.qty*lp-c)/c*100:0; }
   return 0;
 }
-
 function setSort(key) {
-  if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = 1; }
+  if(sortKey===key) sortDir*=-1; else{sortKey=key;sortDir=1;}
   renderTable();
 }
-
 function arrow(key) {
-  if (sortKey !== key) return '<span style="color:var(--text3);font-size:9px"> ⇅</span>';
-  return sortDir === 1
-    ? '<span style="color:var(--teal);font-size:9px"> ↑</span>'
-    : '<span style="color:var(--teal);font-size:9px"> ↓</span>';
+  if(sortKey!==key) return '<span style="color:var(--text3);font-size:9px"> ⇅</span>';
+  return sortDir===1?'<span style="color:var(--teal);font-size:9px"> ↑</span>':'<span style="color:var(--teal);font-size:9px"> ↓</span>';
 }
 
 function renderTable() {
   renderSummary();
-  const isPortfolio = document.getElementById('viewSelect').value === 'portfolio';
-  const ex  = getEx(activeExchange);
-  const sym = ex.symbol;
-  const items = getFilteredItems();
-  const body  = document.getElementById('tableBody');
-  const empty = document.getElementById('emptyMsg');
-
-  document.getElementById('tableHead').innerHTML = `<tr>
+  const isPortfolio = document.getElementById('viewSelect').value==='portfolio';
+  const ex=getEx(activeExchange), sym=ex.symbol;
+  const items=getFilteredItems();
+  const body=document.getElementById('tableBody'), empty=document.getElementById('emptyMsg');
+  document.getElementById('tableHead').innerHTML=`<tr>
     <th onclick="setSort('ticker')">TICKER${arrow('ticker')}</th>
     <th onclick="setSort('name')">NAME${arrow('name')}</th>
     <th>TYPE</th>
-    ${isPortfolio ? `<th class="r" onclick="setSort('qty')">QTY${arrow('qty')}</th>` : ''}
-    ${isPortfolio ? `<th class="r" onclick="setSort('buyPrice')">AVG COST${arrow('buyPrice')}</th>` : ''}
+    ${isPortfolio?`<th class="r" onclick="setSort('qty')">QTY${arrow('qty')}</th>`:''}
+    ${isPortfolio?`<th class="r" onclick="setSort('buyPrice')">AVG COST${arrow('buyPrice')}</th>`:''}
     <th class="r">LTP</th>
-    ${isPortfolio ? `<th class="r" onclick="setSort('currentVal')">VALUE${arrow('currentVal')}</th>` : ''}
-    ${isPortfolio ? `<th class="r" onclick="setSort('pnl')">P&L${arrow('pnl')}</th>` : ''}
-    <th class="r">CHG%</th>
-    <th></th>
+    ${isPortfolio?`<th class="r" onclick="setSort('currentVal')">VALUE${arrow('currentVal')}</th>`:''}
+    ${isPortfolio?`<th class="r" onclick="setSort('pnl')">P&L${arrow('pnl')}</th>`:''}
+    <th class="r">CHG%</th><th></th>
   </tr>`;
-
-  if (items.length === 0) { body.innerHTML = ''; empty.style.display = 'block'; return; }
-  empty.style.display = 'none';
-
-  body.innerHTML = items.map(item => {
-    const lp  = livePrices[item.ticker];
-    const chg = priceChange[item.ticker];
-    const cost = item.qty * item.buyPrice;
-    const val  = lp != null ? item.qty * lp : null;
-    const pnl  = val != null ? val - cost : null;
-    const pnlPct = pnl != null && cost > 0 ? pnl / cost * 100 : null;
-
-    const ltpCell = lp != null
-      ? `${sym}${fmtP(lp)}`
-      : `<span style="color:var(--text3)">—</span>`;
-
-    const valCell = isPortfolio
-      ? `<td class="r">${val != null ? sym + fmt(val) : '—'}</td>` : '';
-
-    const pnlCell = isPortfolio ? (pnl != null
-      ? `<td class="r">
-          <span class="${pnl >= 0 ? 'pos' : 'neg'}">${pnl >= 0 ? '+' : ''}${sym}${fmt(Math.abs(pnl))}</span>
-          <div class="pnl-sub ${pnl >= 0 ? 'pos' : 'neg'}">${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%</div>
-         </td>`
-      : `<td class="r" style="color:var(--text3)">—</td>`) : '';
-
-    const chgCell = chg != null
-      ? `<span class="${chg >= 0 ? 'pos' : 'neg'}">${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%</span>`
-      : `<span style="color:var(--text3)">—</span>`;
-
+  if(items.length===0){body.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  body.innerHTML=items.map(item=>{
+    const lp=livePrices[item.ticker], chg=priceChange[item.ticker];
+    const cost=item.qty*item.buyPrice;
+    const val=lp!=null?item.qty*lp:null;
+    const pnl=val!=null?val-cost:null;
+    const pnlPct=pnl!=null&&cost>0?pnl/cost*100:null;
+    const ltpCell=lp!=null?`${sym}${fmtP(lp)}`:`<span style="color:var(--text3)">—</span>`;
+    const valCell=isPortfolio?`<td class="r">${val!=null?sym+fmt(val):'—'}</td>`:'';
+    const pnlCell=isPortfolio?(pnl!=null?`<td class="r"><span class="${pnl>=0?'pos':'neg'}">${pnl>=0?'+':''}${sym}${fmt(Math.abs(pnl))}</span><div class="pnl-sub ${pnl>=0?'pos':'neg'}">${pnlPct>=0?'+':''}${pnlPct.toFixed(2)}%</div></td>`:`<td class="r" style="color:var(--text3)">—</td>`):'';
+    const chgCell=chg!=null?`<span class="${chg>=0?'pos':'neg'}">${chg>=0?'+':''}${chg.toFixed(2)}%</span>`:`<span style="color:var(--text3)">—</span>`;
     return `<tr>
       <td><span class="ticker">${item.ticker}</span></td>
-      <td style="color:var(--text2);max-width:170px;overflow:hidden;text-overflow:ellipsis" title="${item.notes || ''}">${item.name}</td>
+      <td style="color:var(--text2);max-width:170px;overflow:hidden;text-overflow:ellipsis" title="${item.notes||''}">${item.name}</td>
       <td><span class="type-badge ${item.type}">${item.type}</span></td>
-      ${isPortfolio ? `<td class="r">${item.qty.toLocaleString()}</td>` : ''}
-      ${isPortfolio ? `<td class="r">${sym}${fmtP(item.buyPrice)}</td>` : ''}
-      <td class="r">${ltpCell}</td>
-      ${valCell}
-      ${pnlCell}
+      ${isPortfolio?`<td class="r">${item.qty.toLocaleString()}</td>`:''}
+      ${isPortfolio?`<td class="r">${sym}${fmtP(item.buyPrice)}</td>`:''}
+      <td class="r">${ltpCell}</td>${valCell}${pnlCell}
       <td class="r">${chgCell}</td>
       <td style="white-space:nowrap">
         <button class="edit-btn" onclick="openModal(${item.id})" title="Edit">✎</button>
-        <button class="del-btn"  onclick="deleteItem(${item.id})" title="Delete">✕</button>
+        <button class="del-btn" onclick="deleteItem(${item.id})" title="Delete">✕</button>
       </td>
     </tr>`;
   }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  CHARTS TAB
+// ═══════════════════════════════════════════════
+function initChartSelects() {
+  const sel = document.getElementById('chartExSelect');
+  sel.innerHTML = EXCHANGES.map(e=>`<option value="${e.id}">${e.label}</option>`).join('');
+  sel.value = activeExchange;
+}
+
+function destroyChart(key) {
+  if (charts[key]) { charts[key].destroy(); delete charts[key]; }
+}
+
+function renderCharts() {
+  const exId = document.getElementById('chartExSelect').value;
+  const view = document.getElementById('chartViewSelect').value;
+  const ex   = getEx(exId);
+  const sym  = ex.symbol;
+
+  let items = portfolioData.filter(i => i.exchange===exId && (view==='all'||i.view===view));
+  items = items.filter(i => livePrices[i.ticker] != null || true); // include all
+
+  const withPrice = items.filter(i => livePrices[i.ticker] != null);
+
+  // Chart defaults
+  Chart.defaults.color = '#556080';
+  Chart.defaults.font.family = "'JetBrains Mono', monospace";
+  Chart.defaults.font.size = 11;
+
+  // 1. Donut — allocation by instrument (current value)
+  destroyChart('donut');
+  const donutItems = withPrice.map(i => ({
+    label: i.ticker.replace(/\.(NS|BO|DE)$/,''),
+    value: i.qty * livePrices[i.ticker]
+  }));
+  const donutTotal = donutItems.reduce((s,i)=>s+i.value,0);
+  if (donutItems.length > 0) {
+    charts['donut'] = new Chart(document.getElementById('donutChart'), {
+      type: 'doughnut',
+      data: {
+        labels: donutItems.map(i=>i.label),
+        datasets:[{data: donutItems.map(i=>i.value), backgroundColor: CHART_COLORS, borderWidth:0, hoverOffset:6}]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'65%',
+        plugins:{legend:{display:false}, tooltip:{callbacks:{label: ctx=>{
+          const pct = donutTotal>0?(ctx.parsed/donutTotal*100).toFixed(1):'0';
+          return ` ${sym}${fmt(ctx.parsed)} (${pct}%)`;
+        }}}}
+      }
+    });
+    document.getElementById('donutLegend').innerHTML = donutItems.map((item,i)=>
+      `<div class="legend-item"><span class="legend-dot" style="background:${CHART_COLORS[i%CHART_COLORS.length]}"></span>${item.label} <span style="color:var(--text3)">${donutTotal>0?(item.value/donutTotal*100).toFixed(1):'0'}%</span></div>`
+    ).join('');
+  }
+
+  // 2. Donut — by type
+  destroyChart('type');
+  const typeGroups = {};
+  withPrice.forEach(i => {
+    typeGroups[i.type] = (typeGroups[i.type]||0) + i.qty*livePrices[i.ticker];
+  });
+  const typeColors = {ETF:'#a78bfa', MF:'#38bdf8', Share:'#f5a623'};
+  const typeEntries = Object.entries(typeGroups);
+  if (typeEntries.length > 0) {
+    charts['type'] = new Chart(document.getElementById('typeChart'), {
+      type:'doughnut',
+      data:{
+        labels: typeEntries.map(e=>e[0]),
+        datasets:[{data:typeEntries.map(e=>e[1]), backgroundColor:typeEntries.map(e=>typeColors[e[0]]||'#5b9cf6'), borderWidth:0, hoverOffset:6}]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'65%',
+        plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>{
+          const tot=typeEntries.reduce((s,e)=>s+e[1],0);
+          return ` ${sym}${fmt(ctx.parsed)} (${tot>0?(ctx.parsed/tot*100).toFixed(1):0}%)`;
+        }}}}
+      }
+    });
+    const tot = typeEntries.reduce((s,e)=>s+e[1],0);
+    document.getElementById('typeLegend').innerHTML = typeEntries.map(e=>
+      `<div class="legend-item"><span class="legend-dot" style="background:${typeColors[e[0]]||'#5b9cf6'}"></span>${e[0]} <span style="color:var(--text3)">${tot>0?(e[1]/tot*100).toFixed(1):0}%</span></div>`
+    ).join('');
+  }
+
+  // 3. P&L bar chart
+  destroyChart('pnl');
+  const pnlItems = withPrice.map(i => ({
+    label: i.ticker.replace(/\.(NS|BO|DE)$/,''),
+    pnl: i.qty*livePrices[i.ticker] - i.qty*i.buyPrice
+  }));
+  if (pnlItems.length > 0) {
+    charts['pnl'] = new Chart(document.getElementById('pnlChart'), {
+      type:'bar',
+      data:{
+        labels: pnlItems.map(i=>i.label),
+        datasets:[{
+          label:'P&L',
+          data: pnlItems.map(i=>parseFloat(i.pnl.toFixed(2))),
+          backgroundColor: pnlItems.map(i=>i.pnl>=0?'rgba(61,214,140,0.7)':'rgba(244,110,110,0.7)'),
+          borderColor: pnlItems.map(i=>i.pnl>=0?'#3dd68c':'#f46e6e'),
+          borderWidth:1, borderRadius:4
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${sym}${fmt(ctx.parsed.y)}`}}},
+        scales:{
+          x:{grid:{color:'rgba(42,51,71,0.8)'}, ticks:{color:'#556080'}},
+          y:{grid:{color:'rgba(42,51,71,0.8)'}, ticks:{color:'#556080', callback:v=>sym+fmt(v)}}
+        }
+      }
+    });
+  }
+
+  // 4. Invested vs current value bar chart
+  destroyChart('val');
+  const valItems = items.map(i=>({
+    label: i.ticker.replace(/\.(NS|BO|DE)$/,''),
+    invested: i.qty*i.buyPrice,
+    current: livePrices[i.ticker]!=null ? i.qty*livePrices[i.ticker] : null
+  }));
+  if (valItems.length > 0) {
+    charts['val'] = new Chart(document.getElementById('valChart'), {
+      type:'bar',
+      data:{
+        labels: valItems.map(i=>i.label),
+        datasets:[
+          {label:'Invested', data:valItems.map(i=>parseFloat(i.invested.toFixed(2))), backgroundColor:'rgba(91,156,246,0.6)', borderColor:'#5b9cf6', borderWidth:1, borderRadius:4},
+          {label:'Current',  data:valItems.map(i=>i.current!=null?parseFloat(i.current.toFixed(2)):null), backgroundColor:'rgba(61,214,140,0.6)', borderColor:'#3dd68c', borderWidth:1, borderRadius:4}
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#8b9bbf',boxWidth:12,boxHeight:12}}, tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${sym}${fmt(ctx.parsed.y)}`}}},
+        scales:{
+          x:{grid:{color:'rgba(42,51,71,0.8)'}, ticks:{color:'#556080'}},
+          y:{grid:{color:'rgba(42,51,71,0.8)'}, ticks:{color:'#556080', callback:v=>sym+fmt(v)}}
+        }
+      }
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  CONSOLIDATED TAB
+// ═══════════════════════════════════════════════
+function getINRRates() {
+  return {
+    NSE:  1,
+    DAX:  parseFloat(document.getElementById('fxEUR').value)||90.2,
+    NYSE: parseFloat(document.getElementById('fxUSD').value)||83.5,
+  };
+}
+
+function renderConsolidated() {
+  const rates = getINRRates();
+  const wrap  = document.getElementById('consolidatedWrap');
+
+  // Per-exchange stats
+  let grandCostINR=0, grandValINR=0;
+  const exStats = EXCHANGES.map(ex => {
+    const items = portfolioData.filter(i=>i.exchange===ex.id && i.view==='portfolio');
+    let cost=0, val=0, priced=0;
+    items.forEach(i=>{
+      cost += i.qty*i.buyPrice;
+      if(livePrices[i.ticker]!=null){val+=i.qty*livePrices[i.ticker];priced++;}
+    });
+    const rate = rates[ex.id];
+    grandCostINR += cost*rate;
+    grandValINR  += val*rate;
+    return {ex, items, cost, val, priced, costINR:cost*rate, valINR:val*rate};
+  });
+
+  const grandPnlINR = grandValINR - grandCostINR;
+  const grandPct    = grandCostINR>0 ? grandPnlINR/grandCostINR*100 : 0;
+
+  let html = '';
+
+  // Grand total banner
+  html += `
+    <div class="fx-banner">
+      <div class="fx-card">
+        <div class="fl">TOTAL INVESTED (INR)</div>
+        <div class="fv neu">₹${fmt(grandCostINR)}</div>
+        <div class="fs">across all exchanges</div>
+      </div>
+      <div class="fx-card">
+        <div class="fl">TOTAL CURRENT VALUE (INR)</div>
+        <div class="fv ${grandPnlINR>=0?'pos':'neg'}">₹${fmt(grandValINR)}</div>
+        <div class="fs">${grandValINR>0?'with live prices':''}</div>
+      </div>
+      <div class="fx-card">
+        <div class="fl">TOTAL P&L (INR)</div>
+        <div class="fv ${grandPnlINR>=0?'pos':'neg'}">${grandPnlINR>=0?'+':''}₹${fmt(Math.abs(grandPnlINR))}</div>
+        <div class="fs ${grandPnlINR>=0?'pos':'neg'}">${grandPct>=0?'+':''}${grandPct.toFixed(2)}%</div>
+      </div>
+      <div class="fx-card">
+        <div class="fl">INSTRUMENTS</div>
+        <div class="fv neu">${portfolioData.filter(i=>i.view==='portfolio').length}</div>
+        <div class="fs">${EXCHANGES.length} exchanges</div>
+      </div>
+    </div>`;
+
+  // Per-exchange breakdown
+  exStats.forEach(({ex, items, cost, val, priced, costINR, valINR}) => {
+    const sym   = ex.symbol;
+    const pnl   = val-cost;
+    const pnlPct= cost>0?pnl/cost*100:0;
+    const pnlINR= valINR-costINR;
+    const rate  = rates[ex.id];
+
+    html += `
+      <div class="ex-section">
+        <div class="ex-header">
+          <span class="ex-name" style="color:${ex.color}">${ex.label} <span style="color:var(--text3);font-weight:400;font-size:10px">${ex.currency}</span></span>
+          <div class="ex-stats">
+            <div class="ex-stat">
+              <div class="esl">INVESTED</div>
+              <div class="esv neu">${sym}${fmt(cost)} <span style="color:var(--text3);font-size:10px">/ ₹${fmt(costINR)}</span></div>
+            </div>
+            <div class="ex-stat">
+              <div class="esl">CURRENT</div>
+              <div class="esv ${priced>0?(pnl>=0?'pos':'neg'):'neu'}">${priced>0?sym+fmt(val):'—'} <span style="color:var(--text3);font-size:10px">${priced>0?'/ ₹'+fmt(valINR):''}</span></div>
+            </div>
+            <div class="ex-stat">
+              <div class="esl">P&L</div>
+              <div class="esv ${priced>0?(pnl>=0?'pos':'neg'):'neu'}">${priced>0?(pnl>=0?'+':'')+sym+fmt(Math.abs(pnl)):'—'}</div>
+            </div>
+          </div>
+        </div>
+        <table class="ex-table">
+          <thead><tr>
+            <th>TICKER</th><th>NAME</th><th>TYPE</th>
+            <th class="r">QTY</th><th class="r">COST</th>
+            <th class="r">LTP</th><th class="r">VALUE</th>
+            <th class="r">P&L</th><th class="r">INR VALUE</th>
+          </tr></thead>
+          <tbody>
+            ${items.map(i=>{
+              const lp=livePrices[i.ticker];
+              const ic=i.qty*i.buyPrice;
+              const iv=lp!=null?i.qty*lp:null;
+              const ip=iv!=null?iv-ic:null;
+              const ipPct=ip!=null&&ic>0?ip/ic*100:null;
+              const inrV=iv!=null?iv*rate:null;
+              return `<tr>
+                <td><span class="ticker" style="font-size:12px">${i.ticker}</span></td>
+                <td style="color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;font-size:11px">${i.name}</td>
+                <td><span class="type-badge ${i.type}" style="font-size:9px">${i.type}</span></td>
+                <td class="r">${i.qty}</td>
+                <td class="r">${sym}${fmtP(i.buyPrice)}</td>
+                <td class="r">${lp!=null?sym+fmtP(lp):'—'}</td>
+                <td class="r">${iv!=null?sym+fmt(iv):'—'}</td>
+                <td class="r"><span class="${ip!=null?(ip>=0?'pos':'neg'):'neu'}">${ip!=null?(ip>=0?'+':'')+sym+fmt(Math.abs(ip)):'—'}</span>${ipPct!=null?`<div style="font-size:10px" class="${ip>=0?'pos':'neg'}">${ipPct>=0?'+':''}${ipPct.toFixed(2)}%</div>`:''}</td>
+                <td class="r" style="color:var(--teal)">${inrV!=null?'₹'+fmt(inrV):'—'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  });
+
+  html += `<p class="fx-note">* Only Portfolio items shown · Rates: 1 USD = ₹${rates.NYSE} · 1 EUR = ₹${rates.DAX} · Edit rates above</p>`;
+  wrap.innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════
@@ -538,47 +839,44 @@ const PROXY = 'https://api.allorigins.win/get?url=';
 async function fetchPrice(ticker) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=2d`;
   try {
-    const r  = await fetch(PROXY + encodeURIComponent(url));
-    const j  = await r.json();
-    const d  = JSON.parse(j.contents);
+    const r    = await fetch(PROXY + encodeURIComponent(url));
+    const j    = await r.json();
+    const d    = JSON.parse(j.contents);
     const meta = d.chart.result[0].meta;
     const lp   = meta.regularMarketPrice || meta.previousClose;
     const prev = meta.chartPreviousClose  || meta.previousClose;
     livePrices[ticker]  = lp;
-    priceChange[ticker] = prev ? (lp - prev) / prev * 100 : 0;
-  } catch(e) {
-    console.warn('Price fetch failed:', ticker, e.message);
-  }
+    priceChange[ticker] = prev ? (lp-prev)/prev*100 : 0;
+  } catch(e) { console.warn('Price fetch failed:', ticker, e.message); }
 }
 
 async function refreshPrices() {
   const btn = document.getElementById('refreshBtn');
   btn.classList.add('spin');
-  btn.querySelector('.icon').textContent = '↻';
-  const tickers = [...new Set(portfolioData.map(i => i.ticker))];
-  await Promise.all(tickers.map(t => fetchPrice(t)));
+  const tickers = [...new Set(portfolioData.map(i=>i.ticker))];
+  await Promise.all(tickers.map(t=>fetchPrice(t)));
   saveToStorage();
   renderTabs();
   renderTable();
+  if (activeNav==='charts') renderCharts();
+  if (activeNav==='consolidated') renderConsolidated();
   btn.classList.remove('spin');
-  const now = new Date().toLocaleString();
-  document.getElementById('lastUpdated').textContent = 'Updated: ' + now;
+  document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleString();
   toast('Prices refreshed ✓');
 }
 
 // ═══════════════════════════════════════════════
-//  ADD / EDIT MODAL
+//  MODAL
 // ═══════════════════════════════════════════════
 function populateExchangeDropdown() {
   document.getElementById('fExchange').innerHTML =
-    EXCHANGES.map(e => `<option value="${e.id}">${e.label} (${e.currency})</option>`).join('');
+    EXCHANGES.map(e=>`<option value="${e.id}">${e.label} (${e.currency})</option>`).join('');
 }
-
-function openModal(id = null) {
+function openModal(id=null) {
   populateExchangeDropdown();
   editingId = id;
   if (id) {
-    const item = portfolioData.find(i => i.id === id);
+    const item = portfolioData.find(i=>i.id===id);
     document.getElementById('modalTitle').textContent = 'Edit instrument';
     document.getElementById('fTicker').value   = item.ticker;
     document.getElementById('fName').value     = item.name;
@@ -587,7 +885,7 @@ function openModal(id = null) {
     document.getElementById('fExchange').value = item.exchange;
     document.getElementById('fQty').value      = item.qty;
     document.getElementById('fBuy').value      = item.buyPrice;
-    document.getElementById('fNotes').value    = item.notes || '';
+    document.getElementById('fNotes').value    = item.notes||'';
   } else {
     document.getElementById('modalTitle').textContent = 'Add instrument';
     document.getElementById('fTicker').value   = '';
@@ -602,62 +900,49 @@ function openModal(id = null) {
   document.getElementById('modalOverlay').classList.add('open');
   document.getElementById('fTicker').focus();
 }
-
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
   editingId = null;
 }
-
 function saveInstrument() {
   const ticker   = document.getElementById('fTicker').value.trim().toUpperCase();
   const name     = document.getElementById('fName').value.trim();
   const type     = document.getElementById('fType').value;
   const view     = document.getElementById('fView').value;
   const exchange = document.getElementById('fExchange').value;
-  const qty      = parseFloat(document.getElementById('fQty').value) || 0;
-  const buyPrice = parseFloat(document.getElementById('fBuy').value) || 0;
+  const qty      = parseFloat(document.getElementById('fQty').value)||0;
+  const buyPrice = parseFloat(document.getElementById('fBuy').value)||0;
   const notes    = document.getElementById('fNotes').value.trim();
-
-  if (!ticker || !name) { toast('Ticker and name are required', 'err'); return; }
-
+  if (!ticker||!name) { toast('Ticker and name are required','err'); return; }
   if (editingId) {
-    const idx = portfolioData.findIndex(i => i.id === editingId);
-    portfolioData[idx] = { ...portfolioData[idx], ticker, name, type, view, exchange, qty, buyPrice, notes };
+    const idx = portfolioData.findIndex(i=>i.id===editingId);
+    portfolioData[idx] = {...portfolioData[idx], ticker, name, type, view, exchange, qty, buyPrice, notes};
     toast('Instrument updated ✓');
   } else {
-    portfolioData.push({ id: nextId++, ticker, name, type, view, exchange, qty, buyPrice, notes });
-    fetchPrice(ticker).then(() => { saveToStorage(); renderTable(); });
+    portfolioData.push({id:nextId++, ticker, name, type, view, exchange, qty, buyPrice, notes});
+    fetchPrice(ticker).then(()=>{saveToStorage();renderTable();});
     toast('Instrument added ✓');
   }
-  closeModal();
-  saveToStorage();
-  renderTabs();
-  renderTable();
+  closeModal(); saveToStorage(); renderTabs(); renderTable();
 }
-
 function deleteItem(id) {
-  const item = portfolioData.find(i => i.id === id);
-  if (!confirm(`Delete "${item?.name || id}"?`)) return;
-  portfolioData = portfolioData.filter(i => i.id !== id);
-  saveToStorage();
-  renderTabs();
-  renderTable();
-  toast('Deleted');
+  const item = portfolioData.find(i=>i.id===id);
+  if (!confirm(`Delete "${item?.name||id}"?`)) return;
+  portfolioData = portfolioData.filter(i=>i.id!==id);
+  saveToStorage(); renderTabs(); renderTable(); toast('Deleted');
 }
 
 // ═══════════════════════════════════════════════
 //  IMPORT / EXPORT
 // ═══════════════════════════════════════════════
 function exportJSON() {
-  const data = JSON.stringify(portfolioData, null, 2);
-  const blob = new Blob([data], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(portfolioData,null,2)],{type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'portfolio.json';
   a.click();
   toast('portfolio.json downloaded ✓');
 }
-
 function importJSON(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -665,33 +950,30 @@ function importJSON(event) {
   reader.onload = e => {
     try {
       const imported = JSON.parse(e.target.result);
-      if (!Array.isArray(imported)) throw new Error('Expected an array');
+      if (!Array.isArray(imported)) throw new Error('Expected array');
       portfolioData = imported;
-      nextId = Math.max(...imported.map(i => i.id || 0), 0) + 1;
-      saveToStorage();
-      renderTabs();
-      renderTable();
-      refreshPrices();
+      nextId = Math.max(...imported.map(i=>i.id||0),0)+1;
+      saveToStorage(); renderTabs(); renderTable(); refreshPrices();
       toast(`Imported ${imported.length} instruments ✓`);
-    } catch(err) {
-      toast('Import failed: invalid JSON', 'err');
-    }
+    } catch(err) { toast('Import failed: invalid JSON','err'); }
   };
   reader.readAsText(file);
-  event.target.value = '';
+  event.target.value='';
 }
 
 // ═══════════════════════════════════════════════
 //  KEYBOARD SHORTCUTS
 // ═══════════════════════════════════════════════
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModal();
-  if (e.key === 'n' && !e.target.matches('input,select,textarea')) openModal();
-  if (e.key === 'r' && !e.target.matches('input,select,textarea')) refreshPrices();
+  if (e.key==='Escape') closeModal();
+  if (e.key==='n'&&!e.target.matches('input,select,textarea')) openModal();
+  if (e.key==='r'&&!e.target.matches('input,select,textarea')) refreshPrices();
+  if (e.key==='1'&&!e.target.matches('input,select,textarea')) switchNav('portfolio');
+  if (e.key==='2'&&!e.target.matches('input,select,textarea')) switchNav('charts');
+  if (e.key==='3'&&!e.target.matches('input,select,textarea')) switchNav('consolidated');
 });
-
-document.getElementById('modalOverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
+document.getElementById('modalOverlay').addEventListener('click', e=>{
+  if (e.target===document.getElementById('modalOverlay')) closeModal();
 });
 
 // ═══════════════════════════════════════════════
@@ -700,6 +982,7 @@ document.getElementById('modalOverlay').addEventListener('click', e => {
 (function init() {
   const hadData = loadFromStorage();
   if (!hadData) loadSeedData();
+  initChartSelects();
   renderTabs();
   renderTable();
   refreshPrices();
