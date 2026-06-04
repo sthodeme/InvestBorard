@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -234,7 +233,64 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .trend-up{background:rgba(61,214,140,0.15);color:var(--green)}
 .trend-down{background:rgba(244,110,110,0.15);color:var(--red)}
 .trend-neutral{background:rgba(139,155,191,0.15);color:var(--text2)}
+
+/* ── ALERTS & SIGNALS TAB ── */
+.as-wrap{padding:1.5rem;display:flex;flex-direction:column;gap:1.5rem}
+.as-two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+@media(max-width:860px){.as-two-col{grid-template-columns:1fr}}
+.as-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.25rem}
+.as-card h4{font-size:11px;letter-spacing:0.08em;color:var(--text3);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+.as-card h4 .hbadge{font-size:10px;background:rgba(244,110,110,0.15);color:var(--red);padding:2px 8px;border-radius:10px;letter-spacing:0}
+.alert-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.alert-row:last-child{border-bottom:none}
+.alert-row .ar-ticker{font-weight:700;color:var(--blue);font-size:12px;min-width:80px}
+.alert-row .ar-inputs{display:flex;gap:6px;flex:1;align-items:center;flex-wrap:wrap}
+.alert-row .ar-inputs label{font-size:10px;color:var(--text3);white-space:nowrap}
+.alert-row .ar-inputs input{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:4px;font-family:var(--font);font-size:11px;width:90px;outline:none}
+.alert-row .ar-inputs input:focus{border-color:var(--teal)}
+.alert-row .ar-save{background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);color:var(--teal);padding:3px 10px;border-radius:4px;font-family:var(--font);font-size:10px;cursor:pointer;white-space:nowrap}
+.alert-row .ar-save:hover{background:rgba(56,189,248,0.2)}
+.alert-fired{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700}
+.alert-fired.up{background:rgba(61,214,140,0.15);color:var(--green)}
+.alert-fired.down{background:rgba(244,110,110,0.15);color:var(--red)}
+.alert-log-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px}
+.alert-log-row:last-child{border-bottom:none}
+.alert-log-row .alt{color:var(--text3);font-size:10px;white-space:nowrap}
+.alert-log-row .amsg{color:var(--text2);flex:1}
+.alert-log-row .abadge{padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;white-space:nowrap}
+/* Signal cards */
+.sig-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.sig-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:1rem;position:relative;overflow:hidden}
+.sig-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px}
+.sig-card.STRONG-BUY::before{background:var(--green)}
+.sig-card.BUY::before{background:#22d3a0}
+.sig-card.HOLD::before{background:var(--amber)}
+.sig-card.SELL::before{background:#f97c6e}
+.sig-card.STRONG-SELL::before{background:var(--red)}
+.sig-verdict{font-size:13px;font-weight:700;margin-bottom:4px}
+.sig-verdict.STRONG-BUY,.sig-verdict.BUY{color:var(--green)}
+.sig-verdict.HOLD{color:var(--amber)}
+.sig-verdict.SELL,.sig-verdict.STRONG-SELL{color:var(--red)}
+.sig-ticker{font-size:11px;color:var(--text3);margin-bottom:8px}
+.sig-score-bar{height:4px;background:var(--bg4);border-radius:2px;margin-bottom:10px;overflow:hidden}
+.sig-score-fill{height:100%;border-radius:2px;transition:width 0.6s ease}
+.sig-factors{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.sig-factor{display:flex;align-items:center;justify-content:space-between;font-size:10px}
+.sig-factor .sfl{color:var(--text3)}
+.sig-factor .sfv{font-weight:700}
+.sfv.bull{color:var(--green)}.sfv.bear{color:var(--red)}.sfv.neut{color:var(--text2)}
+.sig-reason{font-size:10px;color:var(--text2);line-height:1.6;border-top:1px solid var(--border);padding-top:8px;margin-top:4px}
+.sig-confidence{font-size:10px;color:var(--text3);margin-top:6px}
+.sig-loading{text-align:center;padding:2rem;color:var(--text3);font-size:12px}
+.sig-filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:1rem}
+.sig-fbtn{padding:4px 12px;border:1px solid var(--border2);border-radius:4px;font-family:var(--font);font-size:11px;color:var(--text3);cursor:pointer;background:var(--bg3);transition:all 0.15s}
+.sig-fbtn:hover{color:var(--text2);border-color:var(--text3)}
+.sig-fbtn.active{background:rgba(56,189,248,0.15);border-color:var(--teal);color:var(--teal)}
+.notif-banner{background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--text2);display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.notif-banner button{background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);color:var(--teal);padding:4px 12px;border-radius:4px;font-family:var(--font);font-size:11px;cursor:pointer}
+.ntab-badge{display:inline-block;background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle;min-width:16px;text-align:center}
 </style>
+
 </head>
 <body>
 <div class="app">
@@ -253,6 +309,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <div class="ntab" id="ntab-charts" onclick="switchNav('charts')">CHARTS</div>
       <div class="ntab" id="ntab-history" onclick="switchNav('history')">HISTORY</div>
       <div class="ntab" id="ntab-consolidated" onclick="switchNav('consolidated')">CONSOLIDATED</div>
+      <div class="ntab" id="ntab-alerts" onclick="switchNav('alerts')">ALERTS &amp; SIGNALS<span class="ntab-badge" id="alertBadge" style="display:none">0</span></div>
     </div>
 
     <!-- PORTFOLIO -->
@@ -349,6 +406,47 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       </div>
       <div class="consolidated-wrap" id="consolidatedWrap"></div>
     </div>
+
+    <!-- ALERTS & SIGNALS -->
+    <div id="section-alerts" class="section-hidden scroll-area">
+      <div class="as-wrap">
+        <div id="notifBanner" class="notif-banner">
+          <span>🔔 Enable browser notifications to get alerted when prices cross your targets (checked on each price refresh)</span>
+          <button onclick="requestNotifPermission()">Enable notifications</button>
+        </div>
+        <div class="as-two-col">
+          <div class="as-card">
+            <h4>PRICE ALERTS <span class="hbadge" id="firedCount" style="display:none">0 triggered</span></h4>
+            <div id="alertsList"></div>
+          </div>
+          <div class="as-card">
+            <h4>ALERT HISTORY
+              <button onclick="clearAlertLog()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-family:var(--font);font-size:10px">Clear</button>
+            </h4>
+            <div id="alertLog"><div style="color:var(--text3);font-size:11px;padding:1rem 0">No alerts fired yet.</div></div>
+          </div>
+        </div>
+        <div class="as-card">
+          <h4>
+            TRADE SIGNALS
+            <button class="btn" style="font-size:10px;padding:4px 10px" onclick="runAllSignals()"><span id="sigSpinIcon">⚡</span> Analyse all</button>
+          </h4>
+          <div class="sig-filter-bar">
+            <span style="font-size:10px;color:var(--text3)">FILTER:</span>
+            <button class="sig-fbtn active" onclick="filterSignals('ALL')">All</button>
+            <button class="sig-fbtn" onclick="filterSignals('STRONG-BUY')">Strong Buy</button>
+            <button class="sig-fbtn" onclick="filterSignals('BUY')">Buy</button>
+            <button class="sig-fbtn" onclick="filterSignals('HOLD')">Hold</button>
+            <button class="sig-fbtn" onclick="filterSignals('SELL')">Sell</button>
+            <button class="sig-fbtn" onclick="filterSignals('STRONG-SELL')">Strong Sell</button>
+          </div>
+          <div class="sig-grid" id="sigGrid">
+            <div class="sig-loading">Click "⚡ Analyse all" to run the signal engine across your portfolio</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -471,13 +569,14 @@ function pct(v,d=2){return(v>=0?'+':'')+v.toFixed(d)+'%';}
 // ═══════════════════════════════════════
 function switchNav(nav){
   activeNav=nav;
-  ['portfolio','charts','history','consolidated'].forEach(n=>{
+  ['portfolio','charts','history','consolidated','alerts'].forEach(n=>{
     document.getElementById('section-'+n).classList.toggle('section-hidden',n!==nav);
     document.getElementById('ntab-'+n).classList.toggle('active',n===nav);
   });
   if(nav==='charts')renderCharts();
   if(nav==='history')initHistoryTab();
   if(nav==='consolidated')renderConsolidated();
+  if(nav==='alerts'){renderAlertsList();renderAlertLog();}
 }
 
 // ═══════════════════════════════════════
@@ -1099,10 +1198,12 @@ async function refreshPrices(){
   const tickers=[...new Set(portfolioData.map(i=>i.ticker))];
   await Promise.all(tickers.map(t=>fetchPrice(t)));
   histCache={};fundDetailsCache={};
+  checkAlerts();
   saveToStorage();renderTabs();renderTable();
   if(activeNav==='charts')renderCharts();
   if(activeNav==='history')loadHistoryChart();
   if(activeNav==='consolidated')renderConsolidated();
+  if(activeNav==='alerts'){renderAlertsList();renderAlertLog();}
   btn.classList.remove('spin');
   document.getElementById('lastUpdated').textContent='Updated: '+new Date().toLocaleString();
   toast('Prices refreshed ✓');
@@ -1194,18 +1295,364 @@ document.addEventListener('keydown',e=>{
     if(e.key==='2')switchNav('charts');
     if(e.key==='3')switchNav('history');
     if(e.key==='4')switchNav('consolidated');
+    if(e.key==='5')switchNav('alerts');
   }
 });
 document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))closeModal();});
 document.getElementById('fdOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('fdOverlay'))closeFundDetails();});
 
 // ═══════════════════════════════════════
-//  BOOT
+//  ALERTS ENGINE
 // ═══════════════════════════════════════
+const LS_ALERTS='pw_alerts_v1';
+const LS_ALERTLOG='pw_alertlog_v1';
+let alertsData={};   // {ticker:{above:num,below:num}}
+let alertLog=[];     // [{time,ticker,msg,type}]
+let allSignals=[];
+let sigFilter='ALL';
+
+function loadAlerts(){
+  try{alertsData=JSON.parse(localStorage.getItem(LS_ALERTS)||'{}');}catch(e){alertsData={};}
+  try{alertLog=JSON.parse(localStorage.getItem(LS_ALERTLOG)||'[]');}catch(e){alertLog=[];}
+}
+function saveAlerts(){
+  localStorage.setItem(LS_ALERTS,JSON.stringify(alertsData));
+  localStorage.setItem(LS_ALERTLOG,JSON.stringify(alertLog));
+}
+
+function renderAlertsList(){
+  const el=document.getElementById('alertsList');
+  if(!portfolioData.length){el.innerHTML='<div style="color:var(--text3);font-size:11px;padding:1rem 0">No instruments in portfolio.</div>';return;}
+  const items=portfolioData.filter(i=>i.view==='portfolio'||i.view==='watchlist');
+  el.innerHTML=items.map(item=>{
+    const ex=getEx(item.exchange),sym=ex.symbol;
+    const a=alertsData[item.ticker]||{};
+    const lp=livePrices[item.ticker];
+    const aboveFired=a.above&&lp&&lp>=a.above;
+    const belowFired=a.below&&lp&&lp<=a.below;
+    return`<div class="alert-row">
+      <span class="ar-ticker">${item.ticker}</span>
+      <div class="ar-inputs">
+        <label>▲ Above</label>
+        <input type="number" id="al_above_${item.ticker}" value="${a.above||''}" placeholder="${sym}—" step="any">
+        <label>▼ Below</label>
+        <input type="number" id="al_below_${item.ticker}" value="${a.below||''}" placeholder="${sym}—" step="any">
+        <button class="ar-save" onclick="saveAlert('${item.ticker}')">Save</button>
+        ${aboveFired?`<span class="alert-fired up">▲ ABOVE ${sym}${fmtP(a.above)}</span>`:''}
+        ${belowFired?`<span class="alert-fired down">▼ BELOW ${sym}${fmtP(a.below)}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  updateAlertBadge();
+}
+
+function saveAlert(ticker){
+  const above=parseFloat(document.getElementById('al_above_'+ticker)?.value)||null;
+  const below=parseFloat(document.getElementById('al_below_'+ticker)?.value)||null;
+  if(!alertsData[ticker])alertsData[ticker]={};
+  alertsData[ticker].above=above;
+  alertsData[ticker].below=below;
+  saveAlerts();
+  toast('Alert saved for '+ticker+' ✓');
+  renderAlertsList();
+}
+
+function checkAlerts(){
+  let fired=0;
+  portfolioData.forEach(item=>{
+    const a=alertsData[item.ticker];
+    if(!a)return;
+    const lp=livePrices[item.ticker];
+    if(!lp)return;
+    const ex=getEx(item.exchange),sym=ex.symbol;
+    const prevFiredAbove=a._firedAbove,prevFiredBelow=a._firedBelow;
+    if(a.above&&lp>=a.above&&!prevFiredAbove){
+      const msg=`${item.ticker} crossed ABOVE ${sym}${fmtP(a.above)} — now at ${sym}${fmtP(lp)}`;
+      logAlert(item.ticker,msg,'up');
+      sendBrowserNotif('📈 Price Alert: '+item.ticker,msg);
+      alertsData[item.ticker]._firedAbove=true;fired++;
+    }
+    if(a.above&&lp<a.above)alertsData[item.ticker]._firedAbove=false;
+    if(a.below&&lp<=a.below&&!prevFiredBelow){
+      const msg=`${item.ticker} dropped BELOW ${sym}${fmtP(a.below)} — now at ${sym}${fmtP(lp)}`;
+      logAlert(item.ticker,msg,'down');
+      sendBrowserNotif('📉 Price Alert: '+item.ticker,msg);
+      alertsData[item.ticker]._firedBelow=true;fired++;
+    }
+    if(a.below&&lp>a.below)alertsData[item.ticker]._firedBelow=false;
+  });
+  saveAlerts();
+  updateAlertBadge();
+  if(activeNav==='alerts'){renderAlertsList();renderAlertLog();}
+  return fired;
+}
+
+function logAlert(ticker,msg,type){
+  alertLog.unshift({time:new Date().toLocaleString(),ticker,msg,type});
+  if(alertLog.length>50)alertLog=alertLog.slice(0,50);
+  saveAlerts();
+}
+
+function renderAlertLog(){
+  const el=document.getElementById('alertLog');
+  if(!alertLog.length){el.innerHTML='<div style="color:var(--text3);font-size:11px;padding:1rem 0">No alerts fired yet.</div>';return;}
+  el.innerHTML=alertLog.map(e=>`
+    <div class="alert-log-row">
+      <span class="alt">${e.time}</span>
+      <span class="amsg">${e.msg}</span>
+      <span class="abadge ${e.type==='up'?'alert-fired up':'alert-fired down'}">${e.type==='up'?'▲':'▼'}</span>
+    </div>`).join('');
+}
+
+function clearAlertLog(){alertLog=[];saveAlerts();renderAlertLog();}
+
+function updateAlertBadge(){
+  const badge=document.getElementById('alertBadge');
+  const firedCount=document.getElementById('firedCount');
+  let count=0;
+  portfolioData.forEach(item=>{
+    const a=alertsData[item.ticker];const lp=livePrices[item.ticker];if(!a||!lp)return;
+    if(a.above&&lp>=a.above)count++;
+    if(a.below&&lp<=a.below)count++;
+  });
+  badge.style.display=count>0?'inline-block':'none';
+  badge.textContent=count;
+  if(firedCount){firedCount.style.display=count>0?'inline':'none';firedCount.textContent=count+' triggered';}
+}
+
+// ═══════════════════════════════════════
+//  BROWSER NOTIFICATIONS
+// ═══════════════════════════════════════
+function requestNotifPermission(){
+  if(!('Notification' in window)){toast('Browser notifications not supported','err');return;}
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){
+      document.getElementById('notifBanner').style.display='none';
+      toast('Notifications enabled ✓');
+    } else {
+      toast('Notification permission denied','err');
+    }
+  });
+}
+function sendBrowserNotif(title,body){
+  if(typeof Notification==='undefined')return;
+  if(Notification.permission==='granted'){
+    new Notification(title,{body,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="%2338bdf8"/><text x="16" y="21" text-anchor="middle" font-size="16" fill="white">P</text></svg>'});
+  }
+}
+function initNotifBanner(){
+  const banner=document.getElementById('notifBanner');
+  if(typeof Notification==='undefined'||Notification.permission==='granted'){
+    banner.style.display='none';
+  }
+}
+
+// ═══════════════════════════════════════
+//  SIGNAL ENGINE
+// ═══════════════════════════════════════
+async function fetchSignalData(ticker){
+  // Fetch 100 days of daily data for indicators
+  const period2=Math.floor(Date.now()/1000);
+  const period1=period2-120*86400;
+  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&period1=${period1}&period2=${period2}`;
+  try{
+    const r=await fetch(PROXY+encodeURIComponent(url));
+    const j=await r.json();
+    const d=JSON.parse(j.contents);
+    const result=d.chart.result[0];
+    const timestamps=result.timestamp||[];
+    const q=result.indicators.quote[0];
+    const closes=q.close||[],volumes=q.volume||[];
+    const data=timestamps.map((t,i)=>({t,c:closes[i],v:volumes[i]})).filter(p=>p.c!=null);
+    return data;
+  }catch(e){return null;}
+}
+
+function calcRSI(closes,period=14){
+  if(closes.length<period+1)return null;
+  let gains=0,losses=0;
+  for(let i=1;i<=period;i++){
+    const diff=closes[i]-closes[i-1];
+    if(diff>=0)gains+=diff;else losses+=Math.abs(diff);
+  }
+  let avgGain=gains/period,avgLoss=losses/period;
+  for(let i=period+1;i<closes.length;i++){
+    const diff=closes[i]-closes[i-1];
+    const g=diff>=0?diff:0,l=diff<0?Math.abs(diff):0;
+    avgGain=(avgGain*(period-1)+g)/period;
+    avgLoss=(avgLoss*(period-1)+l)/period;
+  }
+  if(avgLoss===0)return 100;
+  const rs=avgGain/avgLoss;
+  return parseFloat((100-(100/(1+rs))).toFixed(1));
+}
+
+function calcSMA(arr,period){
+  if(arr.length<period)return null;
+  return arr.slice(-period).reduce((a,b)=>a+b,0)/period;
+}
+
+function calcMomentum(closes,period=10){
+  if(closes.length<period+1)return null;
+  const last=closes[closes.length-1];
+  const prev=closes[closes.length-1-period];
+  return prev>0?(last-prev)/prev*100:null;
+}
+
+function analyseSignal(item,data){
+  if(!data||data.length<20)return null;
+  const closes=data.map(d=>d.c);
+  const volumes=data.map(d=>d.v||0);
+  const lp=closes[closes.length-1];
+  const ex=getEx(item.exchange),sym=ex.symbol;
+
+  // 1. TREND — consecutive days
+  const last5=closes.slice(-5);
+  let trendDays=0,trendDir=0;
+  for(let i=last5.length-1;i>0;i--){
+    if(last5[i]>last5[i-1]){if(trendDir>=0){trendDir=1;trendDays++;}else break;}
+    else if(last5[i]<last5[i-1]){if(trendDir<=0){trendDir=-1;trendDays++;}else break;}
+    else break;
+  }
+
+  // 2. COST BASIS
+  const buyPrice=item.buyPrice||0;
+  const gainPct=buyPrice>0?(lp-buyPrice)/buyPrice*100:0;
+
+  // 3. RSI-14
+  const rsi=calcRSI(closes);
+
+  // 4. VOLUME — recent 5 avg vs 20-day avg
+  const vol5=volumes.slice(-5).reduce((a,b)=>a+b,0)/5;
+  const vol20=volumes.slice(-20).reduce((a,b)=>a+b,0)/20;
+  const volRatio=vol20>0?vol5/vol20:1;
+
+  // 5. MOVING AVERAGES
+  const sma20=calcSMA(closes,20);
+  const sma50=calcSMA(closes,50);
+  const aboveSma20=sma20?lp>sma20:null;
+  const aboveSma50=sma50?lp>sma50:null;
+
+  // 6. MOMENTUM (10-day)
+  const momentum=calcMomentum(closes,10);
+
+  // ── SCORING (0-100) ──
+  let score=50;const reasons=[];const factors=[];
+
+  // Trend contribution (±15)
+  if(trendDir>0&&trendDays>=3){score+=15;reasons.push(`${trendDays}-day uptrend in progress`);}
+  else if(trendDir>0&&trendDays>=1){score+=7;reasons.push('Short-term upward momentum');}
+  else if(trendDir<0&&trendDays>=3){score-=15;reasons.push(`${trendDays}-day downtrend — caution`);}
+  else if(trendDir<0&&trendDays>=1){score-=7;reasons.push('Short-term downward pressure');}
+  factors.push({label:'Trend',value:trendDir>0?`▲ Up ${trendDays}d`:trendDir<0?`▼ Down ${trendDays}d`:'→ Flat',cls:trendDir>0?'bull':trendDir<0?'bear':'neut'});
+
+  // Cost basis contribution (±12)
+  if(gainPct>20){score+=12;reasons.push(`Up ${gainPct.toFixed(0)}% from your buy price — consider taking profits`);}
+  else if(gainPct>5){score+=6;reasons.push(`${gainPct.toFixed(0)}% above your cost basis`);}
+  else if(gainPct<-15){score-=10;reasons.push(`Down ${Math.abs(gainPct).toFixed(0)}% from buy — averaging down could be considered`);}
+  else if(gainPct<-5){score-=5;reasons.push(`${Math.abs(gainPct).toFixed(0)}% below cost — monitor closely`);}
+  factors.push({label:'vs Buy Price',value:(gainPct>=0?'+':'')+gainPct.toFixed(1)+'%',cls:gainPct>0?'bull':gainPct<0?'bear':'neut'});
+
+  // RSI contribution (±12)
+  if(rsi!=null){
+    if(rsi>=70){score-=12;reasons.push(`RSI ${rsi} — overbought, potential pullback`);}
+    else if(rsi>=60){score+=5;reasons.push(`RSI ${rsi} — bullish momentum`);}
+    else if(rsi<=30){score+=12;reasons.push(`RSI ${rsi} — oversold, potential bounce`);}
+    else if(rsi<=40){score-=5;reasons.push(`RSI ${rsi} — weak momentum`);}
+    else{reasons.push(`RSI ${rsi} — neutral zone`);}
+    factors.push({label:'RSI-14',value:rsi.toFixed(0),cls:rsi>=70?'bear':rsi<=30?'bull':'neut'});
+  }
+
+  // Volume contribution (±8)
+  if(volRatio>1.5){score+=8;reasons.push('Volume '+(volRatio*100-100).toFixed(0)+'% above avg — strong conviction');}
+  else if(volRatio>1.2){score+=4;reasons.push('Above average volume confirms move');}
+  else if(volRatio<0.6){score-=4;reasons.push('Low volume — weak conviction');}
+  factors.push({label:'Volume',value:volRatio>0?(volRatio*100).toFixed(0)+'% of avg':'—',cls:volRatio>1.2?'bull':volRatio<0.7?'bear':'neut'});
+
+  // MA contribution (±8)
+  if(aboveSma20!=null&&aboveSma50!=null){
+    if(aboveSma20&&aboveSma50){score+=8;reasons.push('Price above both 20 & 50-day MA — bullish structure');}
+    else if(!aboveSma20&&!aboveSma50){score-=8;reasons.push('Price below both MAs — bearish structure');}
+    else if(aboveSma20&&!aboveSma50){score+=3;reasons.push('Above 20-day MA but below 50-day — mixed');}
+    else{score-=3;reasons.push('Below 20-day MA but above 50-day — weakening');}
+    factors.push({label:'vs 50d MA',value:aboveSma50?sym+fmtP(sma50)+' ↓':''+sym+fmtP(sma50)+' ↑',cls:aboveSma50?'bull':'bear'});
+  }
+
+  // Momentum contribution (±5)
+  if(momentum!=null){
+    if(momentum>5){score+=5;}else if(momentum<-5){score-=5;}
+    factors.push({label:'10d Momentum',value:(momentum>=0?'+':'')+momentum.toFixed(1)+'%',cls:momentum>2?'bull':momentum<-2?'bear':'neut'});
+  }
+
+  score=Math.max(0,Math.min(100,Math.round(score)));
+
+  let verdict,verdictClass;
+  if(score>=80){verdict='STRONG BUY';verdictClass='STRONG-BUY';}
+  else if(score>=62){verdict='BUY';verdictClass='BUY';}
+  else if(score>=42){verdict='HOLD';verdictClass='HOLD';}
+  else if(score>=25){verdict='SELL';verdictClass='SELL';}
+  else{verdict='STRONG SELL';verdictClass='STRONG-SELL';}
+
+  const scoreColor=score>=62?'var(--green)':score>=42?'var(--amber)':'var(--red)';
+
+  return{ticker:item.ticker,name:item.name,verdict,verdictClass,score,scoreColor,factors,reasons:reasons.slice(0,4),lp,sym,gainPct,rsi,sma20,sma50};
+}
+
+function renderSignalCard(s){
+  return`<div class="sig-card ${s.verdictClass}" data-verdict="${s.verdictClass}">
+    <div class="sig-verdict ${s.verdictClass}">${s.verdict}</div>
+    <div class="sig-ticker">${s.ticker} <span style="color:var(--text3)">· ${s.sym}${fmtP(s.lp||0)}</span></div>
+    <div class="sig-score-bar"><div class="sig-score-fill" style="width:${s.score}%;background:${s.scoreColor}"></div></div>
+    <div class="sig-factors">
+      ${s.factors.map(f=>`<div class="sig-factor"><span class="sfl">${f.label}</span><span class="sfv ${f.cls}">${f.value}</span></div>`).join('')}
+    </div>
+    <div class="sig-reason">${s.reasons.join(' · ')}</div>
+    <div class="sig-confidence">Confidence score: ${s.score}/100</div>
+  </div>`;
+}
+
+async function runAllSignals(){
+  const icon=document.getElementById('sigSpinIcon');
+  icon.style.display='inline-block';icon.style.animation='spin 1s linear infinite';
+  const grid=document.getElementById('sigGrid');
+  grid.innerHTML='<div class="sig-loading">↻ Fetching market data and computing signals...</div>';
+  const items=portfolioData.filter(i=>i.view==='portfolio'||i.view==='watchlist');
+  const results=await Promise.all(items.map(async item=>{
+    const data=await fetchSignalData(item.ticker);
+    return analyseSignal(item,data);
+  }));
+  allSignals=results.filter(Boolean);
+  // Sort: Strong Buy first, Strong Sell last
+  const order={'STRONG-BUY':0,'BUY':1,'HOLD':2,'SELL':3,'STRONG-SELL':4};
+  allSignals.sort((a,b)=>(order[a.verdictClass]||2)-(order[b.verdictClass]||2));
+  icon.style.animation='';icon.textContent='⚡';
+  renderSignalGrid();
+  toast('Signal analysis complete ✓');
+}
+
+function filterSignals(filter){
+  sigFilter=filter;
+  document.querySelectorAll('.sig-fbtn').forEach(b=>b.classList.toggle('active',b.textContent.toUpperCase().replace(' ','')===filter||b.textContent==='All'&&filter==='ALL'));
+  renderSignalGrid();
+}
+
+function renderSignalGrid(){
+  const grid=document.getElementById('sigGrid');
+  const filtered=sigFilter==='ALL'?allSignals:allSignals.filter(s=>s.verdictClass===sigFilter);
+  if(!filtered.length){
+    grid.innerHTML=`<div class="sig-loading">No ${sigFilter==='ALL'?'':'\''+sigFilter+'\' '}signals yet. Click "⚡ Analyse all" to run.</div>`;
+    return;
+  }
+  grid.innerHTML=filtered.map(renderSignalCard).join('');
+}
+
+
 (function init(){
   const hadData=loadFromStorage();
   if(!hadData)loadSeedData();
+  loadAlerts();
   initChartSelects();
+  initNotifBanner();
   renderTabs();
   renderTable();
   refreshPrices();
