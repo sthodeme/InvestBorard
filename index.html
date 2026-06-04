@@ -502,8 +502,26 @@ const EXCHANGES=[
   {id:'NYSE',label:'NYSE / NASDAQ',currency:'USD',symbol:'$',color:'#3dd68c',inrRate:83.5},
 ];
 const CHART_COLORS=['#38bdf8','#a78bfa','#3dd68c','#f5a623','#f46e6e','#5b9cf6','#e879f9','#34d399','#fbbf24','#f87171','#60a5fa','#c084fc','#4ade80','#fb923c','#f472b6','#a3e635'];
-const PROXY='https://api.allorigins.win/get?url=';
 const RANGE_DAYS={'1M':30,'3M':90,'6M':180,'1Y':365,'3Y':1095,'5Y':1825,'MAX':36500};
+// Multiple CORS proxies — tried in order until one works
+const PROXIES=[
+  url=>`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  url=>`https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+];
+async function proxyFetch(url){
+  for(const makeProxy of PROXIES){
+    try{
+      const r=await fetch(makeProxy(url),{signal:AbortSignal.timeout(8000)});
+      if(!r.ok)continue;
+      const text=await r.text();
+      // allorigins wraps in {contents:...}, others return raw
+      try{const j=JSON.parse(text);return j.contents?j.contents:text;}
+      catch(e){return text;}
+    }catch(e){continue;}
+  }
+  throw new Error('All proxies failed for: '+url);
+}
 
 // ═══════════════════════════════════════
 //  STATE
@@ -701,9 +719,8 @@ async function fetchFundDetails(ticker){
   if(fundDetailsCache[ticker])return fundDetailsCache[ticker];
   const url=`https://query2.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=assetProfile,summaryDetail,defaultKeyStatistics,fundProfile,topHoldings,fundPerformance`;
   try{
-    const r=await fetch(PROXY+encodeURIComponent(url));
-    const j=await r.json();
-    const d=JSON.parse(j.contents);
+    const text=await proxyFetch(url);
+    const d=JSON.parse(text);
     const res=d.quoteSummary.result[0];
     fundDetailsCache[ticker]=res;
     return res;
@@ -711,36 +728,21 @@ async function fetchFundDetails(ticker){
 }
 
 async function fetchHistoricalReturns(ticker){
-  // Fetch 5Y of weekly data to compute 1Y/3Y/5Y returns
   const period2=Math.floor(Date.now()/1000);
   const period1=period2-5*365*86400;
   const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1wk&period1=${period1}&period2=${period2}`;
   try{
-    const r=await fetch(PROXY+encodeURIComponent(url));
-    const j=await r.json();
-    const d=JSON.parse(j.contents);
+    const text=await proxyFetch(url);
+    const d=JSON.parse(text);
     const result=d.chart.result[0];
     const timestamps=result.timestamp||[];
     const closes=result.indicators.quote[0].close||[];
     const data=timestamps.map((t,i)=>({t,c:closes[i]})).filter(p=>p.c!=null);
     const now=Date.now()/1000;
-    const find=(daysAgo)=>{
-      const target=now-daysAgo*86400;
-      let best=data[0];
-      data.forEach(p=>{if(Math.abs(p.t-target)<Math.abs(best.t-target))best=p;});
-      return best;
-    };
+    const find=(daysAgo)=>{const target=now-daysAgo*86400;let best=data[0];data.forEach(p=>{if(Math.abs(p.t-target)<Math.abs(best.t-target))best=p;});return best;};
     const latest=data[data.length-1];
-    const calc=(daysAgo)=>{
-      const p=find(daysAgo);
-      return p&&p.c?((latest.c-p.c)/p.c*100):null;
-    };
-    return{
-      '1Y':calc(365),'3Y':calc(1095),'5Y':calc(1825),
-      allTimeHigh:Math.max(...data.map(p=>p.c)),
-      allTimeLow:Math.min(...data.map(p=>p.c)),
-      dataStart:data[0]?.t,dataPoints:data.length
-    };
+    const calc=(daysAgo)=>{const p=find(daysAgo);return p&&p.c?((latest.c-p.c)/p.c*100):null;};
+    return{'1Y':calc(365),'3Y':calc(1095),'5Y':calc(1825),allTimeHigh:Math.max(...data.map(p=>p.c)),allTimeLow:Math.min(...data.map(p=>p.c)),dataStart:data[0]?.t,dataPoints:data.length};
   }catch(e){return null;}
 }
 
@@ -996,9 +998,8 @@ async function fetchHistorical(ticker,rangeDays){
   const period1=period2-rangeDays*86400;
   const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=${interval}&period1=${period1}&period2=${period2}`;
   try{
-    const r=await fetch(PROXY+encodeURIComponent(url));
-    const j=await r.json();
-    const d=JSON.parse(j.contents);
+    const text=await proxyFetch(url);
+    const d=JSON.parse(text);
     const result=d.chart.result[0];
     const timestamps=result.timestamp||[];
     const closes=result.indicators.quote[0].close||[];
@@ -1101,26 +1102,34 @@ function initChartSelects(){
   const sel=document.getElementById('chartExSelect');
   sel.innerHTML=EXCHANGES.map(e=>`<option value="${e.id}">${e.label}</option>`).join('');
   sel.value=activeExchange;
+  document.getElementById('chartViewSelect').value='portfolio';
 }
 function destroyChart(key){if(charts[key]){charts[key].destroy();delete charts[key];}}
 function renderCharts(){
   const exId=document.getElementById('chartExSelect').value;
   const view=document.getElementById('chartViewSelect').value;
   const ex=getEx(exId),sym=ex.symbol;
-  const items=portfolioData.filter(i=>i.exchange===exId&&(view==='all'||i.view===view));
-  const withPrice=items.filter(i=>livePrices[i.ticker]!=null);
+  const items=portfolioData.filter(i=>i.exchange===exId&&(view==='all'||i.view===view)&&i.qty>0);
+  // Use live price if available, fall back to buy price so charts always render
+  const priceOf=i=>livePrices[i.ticker]??i.buyPrice??0;
+  const withPrice=items.filter(i=>priceOf(i)>0);
+  const usingFallback=withPrice.some(i=>livePrices[i.ticker]==null);
   Chart.defaults.color='#556080';Chart.defaults.font.family="'JetBrains Mono',monospace";Chart.defaults.font.size=11;
   destroyChart('donut');
-  const dItems=withPrice.map(i=>({label:i.ticker.replace(/\.(NS|BO|DE)$/,''),value:i.qty*livePrices[i.ticker]}));
+  const dItems=withPrice.map(i=>({label:i.ticker.replace(/\.(NS|BO|DE)$/,''),value:i.qty*priceOf(i)}));
   const dTotal=dItems.reduce((s,i)=>s+i.value,0);
   if(dItems.length>0){
+    document.querySelector('#donutChart').closest('.chart-card').querySelector('h4').textContent=
+      'ALLOCATION BY INSTRUMENT'+(usingFallback?' (buy price)':'');
     charts['donut']=new Chart(document.getElementById('donutChart'),{type:'doughnut',
       data:{labels:dItems.map(i=>i.label),datasets:[{data:dItems.map(i=>i.value),backgroundColor:CHART_COLORS,borderWidth:0,hoverOffset:6}]},
       options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${sym}${fmt(ctx.parsed)} (${dTotal>0?(ctx.parsed/dTotal*100).toFixed(1):0}%)`}}}}});
     document.getElementById('donutLegend').innerHTML=dItems.map((item,i)=>`<div class="legend-item"><span class="legend-dot" style="background:${CHART_COLORS[i%CHART_COLORS.length]}"></span>${item.label} <span style="color:var(--text3)">${dTotal>0?(item.value/dTotal*100).toFixed(1):0}%</span></div>`).join('');
+  } else {
+    document.getElementById('donutLegend').innerHTML='<div style="color:var(--text3);font-size:11px">No portfolio instruments for this exchange.</div>';
   }
   destroyChart('type');
-  const tg={};withPrice.forEach(i=>{tg[i.type]=(tg[i.type]||0)+i.qty*livePrices[i.ticker];});
+  const tg={};withPrice.forEach(i=>{tg[i.type]=(tg[i.type]||0)+i.qty*priceOf(i);});
   const tc={ETF:'#a78bfa',MF:'#38bdf8',Share:'#f5a623'};const te=Object.entries(tg);
   if(te.length>0){
     charts['type']=new Chart(document.getElementById('typeChart'),{type:'doughnut',
@@ -1130,14 +1139,16 @@ function renderCharts(){
     document.getElementById('typeLegend').innerHTML=te.map(e=>`<div class="legend-item"><span class="legend-dot" style="background:${tc[e[0]]||'#5b9cf6'}"></span>${e[0]} <span style="color:var(--text3)">${tot>0?(e[1]/tot*100).toFixed(1):0}%</span></div>`).join('');
   }
   destroyChart('pnl');
-  const pItems=withPrice.map(i=>({label:i.ticker.replace(/\.(NS|BO|DE)$/,''),pnl:i.qty*livePrices[i.ticker]-i.qty*i.buyPrice}));
+  const pItems=withPrice.filter(i=>livePrices[i.ticker]!=null).map(i=>({label:i.ticker.replace(/\.(NS|BO|DE)$/,''),pnl:i.qty*livePrices[i.ticker]-i.qty*i.buyPrice}));
   if(pItems.length>0){
     charts['pnl']=new Chart(document.getElementById('pnlChart'),{type:'bar',
       data:{labels:pItems.map(i=>i.label),datasets:[{label:'P&L',data:pItems.map(i=>parseFloat(i.pnl.toFixed(2))),backgroundColor:pItems.map(i=>i.pnl>=0?'rgba(61,214,140,0.7)':'rgba(244,110,110,0.7)'),borderColor:pItems.map(i=>i.pnl>=0?'#3dd68c':'#f46e6e'),borderWidth:1,borderRadius:4}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${sym}${fmt(ctx.parsed.y)}`}}},scales:{x:{grid:{color:'rgba(42,51,71,0.8)'},ticks:{color:'#556080'}},y:{grid:{color:'rgba(42,51,71,0.8)'},ticks:{color:'#556080',callback:v=>sym+fmt(v)}}}}});
+  } else {
+    document.querySelector('#pnlChart').closest('.chart-card').querySelector('h4').textContent='P&L BY INSTRUMENT (refresh prices to load)';
   }
   destroyChart('val');
-  const vItems=items.map(i=>({label:i.ticker.replace(/\.(NS|BO|DE)$/,''),invested:i.qty*i.buyPrice,current:livePrices[i.ticker]!=null?i.qty*livePrices[i.ticker]:null}));
+  const vItems=withPrice.map(i=>({label:i.ticker.replace(/\.(NS|BO|DE)$/,''),invested:i.qty*i.buyPrice,current:livePrices[i.ticker]!=null?i.qty*livePrices[i.ticker]:null}));
   if(vItems.length>0){
     charts['val']=new Chart(document.getElementById('valChart'),{type:'bar',
       data:{labels:vItems.map(i=>i.label),datasets:[
@@ -1209,8 +1220,8 @@ function renderConsolidated(){
 async function fetchPrice(ticker){
   const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=2d`;
   try{
-    const r=await fetch(PROXY+encodeURIComponent(url));
-    const j=await r.json();const d=JSON.parse(j.contents);
+    const text=await proxyFetch(url);
+    const d=JSON.parse(text);
     const meta=d.chart.result[0].meta;
     const lp=meta.regularMarketPrice||meta.previousClose;
     const prev=meta.chartPreviousClose||meta.previousClose;
@@ -1475,14 +1486,12 @@ function initNotifBanner(){
 //  SIGNAL ENGINE
 // ═══════════════════════════════════════
 async function fetchSignalData(ticker){
-  // Fetch 100 days of daily data for indicators
   const period2=Math.floor(Date.now()/1000);
   const period1=period2-120*86400;
   const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&period1=${period1}&period2=${period2}`;
   try{
-    const r=await fetch(PROXY+encodeURIComponent(url));
-    const j=await r.json();
-    const d=JSON.parse(j.contents);
+    const text=await proxyFetch(url);
+    const d=JSON.parse(text);
     const result=d.chart.result[0];
     const timestamps=result.timestamp||[];
     const q=result.indicators.quote[0];
