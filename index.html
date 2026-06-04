@@ -517,19 +517,43 @@ let fundDetailsCache={};
 //  STORAGE
 // ═══════════════════════════════════════
 const LS_KEY='portfoliowatch_v3';
+const LS_KEYS_LEGACY=['portfoliowatch_v2','portfoliowatch_v1'];
 function saveToStorage(){
-  try{localStorage.setItem(LS_KEY,JSON.stringify({portfolioData,livePrices,priceChange,nextId,activeExchange,savedAt:new Date().toISOString()}));}catch(e){}
+  try{localStorage.setItem(LS_KEY,JSON.stringify({portfolioData,livePrices,priceChange,nextId,activeExchange,activeView:document.getElementById('viewSelect')?.value||'portfolio',savedAt:new Date().toISOString()}));}catch(e){}
 }
 function loadFromStorage(){
   try{
-    const raw=localStorage.getItem(LS_KEY)||localStorage.getItem('portfoliowatch_v2');
+    // Try current key first, then all legacy keys
+    let raw=localStorage.getItem(LS_KEY);
+    let migrated=false;
+    if(!raw){
+      for(const k of LS_KEYS_LEGACY){
+        raw=localStorage.getItem(k);
+        if(raw){migrated=true;break;}
+      }
+    }
     if(!raw)return false;
     const d=JSON.parse(raw);
-    portfolioData=d.portfolioData||[];livePrices=d.livePrices||{};priceChange=d.priceChange||{};
-    nextId=d.nextId||(portfolioData.length+1);activeExchange=d.activeExchange||'NSE';
+    portfolioData=d.portfolioData||[];
+    // Ensure all items have new fields added in later versions
+    portfolioData=portfolioData.map(i=>({
+      manualRating:0,manualNotes:'',indexSuitable:'',buyDate:'',notes:'',
+      ...i
+    }));
+    livePrices=d.livePrices||{};priceChange=d.priceChange||{};
+    nextId=d.nextId||(portfolioData.length+1);
+    activeExchange=d.activeExchange||'NSE';
+    // Restore last active view (portfolio/watchlist)
+    const savedView=d.activeView||'portfolio';
+    setTimeout(()=>{
+      const sel=document.getElementById('viewSelect');
+      if(sel)sel.value=savedView;
+    },0);
     if(d.savedAt)document.getElementById('lastUpdated').textContent='Last saved: '+new Date(d.savedAt).toLocaleString();
-    return true;
-  }catch(e){return false;}
+    // Migrate: write to current key so legacy key no longer needed
+    if(migrated)saveToStorage();
+    return portfolioData.length>0;
+  }catch(e){console.warn('Storage load failed',e);return false;}
 }
 function loadSeedData(){
   portfolioData=[
@@ -1101,7 +1125,7 @@ function renderCharts(){
   if(te.length>0){
     charts['type']=new Chart(document.getElementById('typeChart'),{type:'doughnut',
       data:{labels:te.map(e=>e[0]),datasets:[{data:te.map(e=>e[1]),backgroundColor:te.map(e=>tc[e[0]]||'#5b9cf6'),borderWidth:0,hoverOffset:6}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const tot=te.reduce((s,e)=>s+e[1],0);return`${sym}${fmt(ctx.parsed)} (${tot>0?(ctx.parsed/tot*100).toFixed(1):0}%)`;}}}}});
+      options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const tot=te.reduce((s,e)=>s+e[1],0);return`${sym}${fmt(ctx.parsed)} (${tot>0?(ctx.parsed/tot*100).toFixed(1):0}%)`;}}}}}});
     const tot=te.reduce((s,e)=>s+e[1],0);
     document.getElementById('typeLegend').innerHTML=te.map(e=>`<div class="legend-item"><span class="legend-dot" style="background:${tc[e[0]]||'#5b9cf6'}"></span>${e[0]} <span style="color:var(--text3)">${tot>0?(e[1]/tot*100).toFixed(1):0}%</span></div>`).join('');
   }
@@ -1653,6 +1677,8 @@ function renderSignalGrid(){
   loadAlerts();
   initChartSelects();
   initNotifBanner();
+  // Always start on Portfolio tab, Portfolio view
+  document.getElementById('viewSelect').value='portfolio';
   renderTabs();
   renderTable();
   refreshPrices();
