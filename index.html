@@ -617,17 +617,21 @@ function loadFromStorage(){
 }
 function loadSeedData(){
   portfolioData=[
-    {id:1,ticker:'NIFTYBEES.NS',name:'Nippon Nifty BeES ETF',type:'ETF',qty:200,buyPrice:220,buyDate:'2022-01-15',exchange:'NSE',view:'portfolio',notes:'',manualRating:0,manualNotes:'',indexSuitable:'yes'},
-    {id:2,ticker:'JUNIORBEES.NS',name:'Nippon Junior BeES ETF',type:'ETF',qty:100,buyPrice:580,buyDate:'2022-03-10',exchange:'NSE',view:'portfolio',notes:'SIP monthly',manualRating:0,manualNotes:'',indexSuitable:''},
-    {id:3,ticker:'HDFCBANK.NS',name:'HDFC Bank Ltd',type:'Share',qty:15,buyPrice:1550,buyDate:'2023-06-01',exchange:'NSE',view:'portfolio',notes:'',manualRating:4,manualNotes:'Strong fundamentals',indexSuitable:''},
-    {id:4,ticker:'RELIANCE.NS',name:'Reliance Industries',type:'Share',qty:10,buyPrice:2800,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Watching for dip',manualRating:0,manualNotes:'',indexSuitable:''},
-    {id:5,ticker:'EXS1.DE',name:'iShares Core DAX UCITS ETF',type:'ETF',qty:20,buyPrice:135,buyDate:'2022-09-01',exchange:'DAX',view:'portfolio',notes:'',manualRating:0,manualNotes:'',indexSuitable:'yes'},
-    {id:6,ticker:'VUSA.DE',name:'Vanguard S&P 500 UCITS ETF',type:'ETF',qty:15,buyPrice:95,buyDate:'2022-09-01',exchange:'DAX',view:'portfolio',notes:'',manualRating:0,manualNotes:'',indexSuitable:'yes'},
-    {id:7,ticker:'SPY',name:'SPDR S&P 500 ETF Trust',type:'ETF',qty:5,buyPrice:420,buyDate:'2023-01-20',exchange:'NYSE',view:'portfolio',notes:'Core holding',manualRating:0,manualNotes:'',indexSuitable:'yes'},
-    {id:8,ticker:'QQQ',name:'Invesco QQQ Trust',type:'ETF',qty:3,buyPrice:350,buyDate:'2023-01-20',exchange:'NYSE',view:'portfolio',notes:'',manualRating:0,manualNotes:'',indexSuitable:'yes'},
-    {id:9,ticker:'AAPL',name:'Apple Inc.',type:'Share',qty:8,buyPrice:175,buyDate:'',exchange:'NYSE',view:'watchlist',notes:'',manualRating:0,manualNotes:'',indexSuitable:''},
+    {id:1,ticker:'0P0000UDS0.BO',name:'HDFC Gold ETF Fund of Fund - Regular Growth',type:'MF',qty:100,buyPrice:25,buyDate:'',exchange:'NSE',view:'watchlist',notes:'HDFC Gold FoF Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
+    {id:2,ticker:'0P00005WNE.BO',name:'HDFC Large Cap Fund - Regular Growth',type:'MF',qty:100,buyPrice:950,buyDate:'',exchange:'NSE',view:'watchlist',notes:'HDFC Large Cap Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
+    {id:3,ticker:'0P00016H6Y.BO',name:'Mirae Asset Aggressive Hybrid Fund - Regular Growth',type:'MF',qty:100,buyPrice:28,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Mirae Aggressive Hybrid Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
+    {id:4,ticker:'0P00012ALU.BO',name:'Motilal Oswal Midcap Fund - Regular Growth',type:'MF',qty:100,buyPrice:45,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Motilal Oswal Midcap Regular Plan',manualRating:0,manualNotes:'',indexSuitable:''},
+    {id:5,ticker:'TATASTEEL.NS',name:'Tata Steel Limited',type:'Share',qty:100,buyPrice:150,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Metals sector',manualRating:0,manualNotes:'',indexSuitable:''},
+    {id:6,ticker:'METAL.NS',name:'Mirae Asset Nifty Metal ETF',type:'ETF',qty:100,buyPrice:90,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Nifty Metal Index ETF',manualRating:0,manualNotes:'',indexSuitable:'yes'},
+    {id:7,ticker:'METALIETF.NS',name:'ICICI Prudential Nifty Metal ETF',type:'ETF',qty:100,buyPrice:90,buyDate:'',exchange:'NSE',view:'watchlist',notes:'ICICI Nifty Metal Index ETF',manualRating:0,manualNotes:'',indexSuitable:'yes'},
+    {id:8,ticker:'MCL.NS',name:'Madhav Copper Limited',type:'Share',qty:100,buyPrice:55,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Copper sector stock',manualRating:0,manualNotes:'',indexSuitable:''},
+    {id:9,ticker:'MOSILVER.NS',name:'Motilal Oswal Silver ETF',type:'ETF',qty:100,buyPrice:200,buyDate:'',exchange:'NSE',view:'watchlist',notes:'MO Silver ETF',manualRating:0,manualNotes:'',indexSuitable:'yes'},
+    {id:10,ticker:'SILVERAG.NS',name:'Mirae Asset Silver ETF',type:'ETF',qty:100,buyPrice:200,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Mirae Silver ETF',manualRating:0,manualNotes:'',indexSuitable:'yes'},
+    {id:11,ticker:'TATSILV.NS',name:'Tata Silver ETF Fund of Fund',type:'ETF',qty:100,buyPrice:200,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Tata Silver ETF FoF',manualRating:0,manualNotes:'',indexSuitable:'yes'},
+    {id:12,ticker:'HDFCSILVER.NS',name:'HDFC Silver ETF',type:'ETF',qty:100,buyPrice:200,buyDate:'',exchange:'NSE',view:'watchlist',notes:'HDFC Silver ETF',manualRating:0,manualNotes:'',indexSuitable:'yes'},
+    {id:13,ticker:'HINDCOPPER.NS',name:'Hindustan Copper Limited',type:'Share',qty:100,buyPrice:400,buyDate:'',exchange:'NSE',view:'watchlist',notes:'Copper sector',manualRating:0,manualNotes:'',indexSuitable:''},
   ];
-  nextId=10;saveToStorage();
+  nextId=14;saveToStorage();
 }
 
 // ═══════════════════════════════════════
@@ -1798,13 +1802,27 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 (function init(){
+  // Migrate: remove old version keys (v1, v2 only — v3 is current)
+  ['portfoliowatch_v1','portfoliowatch_v2'].forEach(k=>localStorage.removeItem(k));
+  // Force reload seed if current storage has old sample tickers
+  const raw=localStorage.getItem('portfoliowatch_v3');
+  if(raw){
+    try{
+      const d=JSON.parse(raw);
+      const tickers=(d.portfolioData||[]).map(i=>i.ticker);
+      // If data still has old sample tickers, wipe and reload seed
+      const oldSamples=['NIFTYBEES.NS','JUNIORBEES.NS','SPY','QQQ','EXS1.DE'];
+      const hasOld=oldSamples.some(t=>tickers.includes(t));
+      if(hasOld)localStorage.removeItem('portfoliowatch_v3');
+    }catch(e){}
+  }
   const hadData=loadFromStorage();
   if(!hadData)loadSeedData();
   loadAlerts();
   loadManualPrices();
   initChartSelects();
   initNotifBanner();
-  document.getElementById('viewSelect').value='portfolio';
+  document.getElementById('viewSelect').value='watchlist';
   renderTabs();
   renderTable();
   refreshPrices();
