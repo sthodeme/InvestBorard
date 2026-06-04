@@ -1,6 +1,8 @@
 {
     "id": 1,
     "ticker": "0P0000UDS0.BO",
+    "alertAbove": 36,
+    "alertBelow": 48,
     "name": "HDFC Gold ETF Fund of Fund - Regular Growth",
     "type": "MF",
     "qty": 100,
