@@ -1,0 +1,26 @@
+[
+  {
+    "id": "NSE",
+    "label": "NSE / BSE",
+    "currency": "INR",
+    "symbol": "₹",
+    "color": "#38bdf8",
+    "note": "Use Yahoo Finance suffix .NS for NSE, .BO for BSE"
+  },
+  {
+    "id": "DAX",
+    "label": "DAX",
+    "currency": "EUR",
+    "symbol": "€",
+    "color": "#a78bfa",
+    "note": "Use Yahoo Finance suffix .DE for XETRA/Frankfurt"
+  },
+  {
+    "id": "NYSE",
+    "label": "NYSE / NASDAQ",
+    "currency": "USD",
+    "symbol": "$",
+    "color": "#3dd68c",
+    "note": "No suffix needed for US stocks and ETFs"
+  }
+]

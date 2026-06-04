@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "ticker": "NIFTYBEES.NS",
+    "name": "Nippon Nifty BeES ETF",
+    "type": "ETF",
+    "qty": 200,
+    "buyPrice": 220,
+    "exchange": "NSE",
+    "view": "portfolio"
+  },
+  {
+    "id": 2,
+    "ticker": "JUNIORBEES.NS",
+    "name": "Nippon Junior BeES ETF",
+    "type": "ETF",
+    "qty": 100,
+    "buyPrice": 580,
+    "exchange": "NSE",
+    "view": "portfolio"
+  },
+  {
+    "id": 3,
+    "ticker": "HDFCBANK.NS",
+    "name": "HDFC Bank Ltd",
+    "type": "Share",
+    "qty": 15,
+    "buyPrice": 1550,
+    "exchange": "NSE",
+    "view": "portfolio"
+  },
+  {
+    "id": 4,
+    "ticker": "RELIANCE.NS",
+    "name": "Reliance Industries",
+    "type": "Share",
+    "qty": 10,
+    "buyPrice": 2800,
+    "exchange": "NSE",
+    "view": "watchlist"
+  },
+  {
+    "id": 5,
+    "ticker": "EXS1.DE",
+    "name": "iShares Core DAX UCITS ETF",
+    "type": "ETF",
+    "qty": 20,
+    "buyPrice": 135,
+    "exchange": "DAX",
+    "view": "portfolio"
+  },
+  {
+    "id": 6,
+    "ticker": "VUSA.DE",
+    "name": "Vanguard S&P 500 UCITS ETF",
+    "type": "ETF",
+    "qty": 15,
+    "buyPrice": 95,
+    "exchange": "DAX",
+    "view": "portfolio"
+  },
+  {
+    "id": 7,
+    "ticker": "SPY",
+    "name": "SPDR S&P 500 ETF Trust",
+    "type": "ETF",
+    "qty": 5,
+    "buyPrice": 420,
+    "exchange": "NYSE",
+    "view": "portfolio"
+  },
+  {
+    "id": 8,
+    "ticker": "QQQ",
+    "name": "Invesco QQQ Trust",
+    "type": "ETF",
+    "qty": 3,
+    "buyPrice": 350,
+    "exchange": "NYSE",
+    "view": "portfolio"
+  },
+  {
+    "id": 9,
+    "ticker": "AAPL",
+    "name": "Apple Inc.",
+    "type": "Share",
+    "qty": 8,
+    "buyPrice": 175,
+    "exchange": "NYSE",
+    "view": "watchlist"
+  }
+]
